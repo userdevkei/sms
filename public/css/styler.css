@@ -1,0 +1,271 @@
+body
+{
+    background-color: rgba(0, 0, 0, 0.2);
+    font-family: Courier New;
+    font-size: 16px;
+    line-height: 1.5;
+    padding: 0;
+    margin: 0;
+}
+
+.container
+{
+    margin: auto;
+    width: 90%;
+    overflow: hidden;
+}
+.container-fluid
+{
+    margin: auto;
+    width: 95%;
+    overflow: hidden;
+}
+header
+{
+    background: rgba(70,130,180,0.7);
+    padding-top: 15px;
+    min-height: 75px;
+
+}
+
+header nav
+{
+    margin-top: 15px;
+    float: right;
+}
+.brand
+{
+    float: left;
+    color: black;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 5px 0 5px 0;
+}
+
+brand sub
+{
+    font-size: 8px;
+}
+.logo-highlight
+{
+    color: black;
+    font-size: 26px;
+    font-weight: bolder;
+    margin: auto;
+    padding: 0 8px 0 8px;
+    border: 4px solid white;
+    border-radius: 50%;
+}
+
+ul
+{
+    margin: 0;
+    padding: 0;
+}
+
+header nav ul li
+{
+    display: inline;
+    padding: 20px 0 20px 0;
+}
+
+header a
+{
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+header a:hover
+{
+    text-transform: capitalize;
+    font-weight: bolder;
+    font-size: 18px;
+    color: ghostwhite;
+}
+
+#top-story
+{
+    background: rgba(0, 0, 0, 0.1);
+    margin: 25px 35px 25px 35px;
+    padding: 20px 0 15px 5px;
+}
+.top-story span h3
+{
+    font-size: 18px;
+    font-weight: bold;
+    color: maroon;
+}
+
+.content
+{
+    float: left;
+    width: 50%;
+    text-align: justify;
+}
+
+.story-img
+{
+    float: right;
+    width: 48%;
+}
+
+.story-image img
+{
+    background-repeat: no-repeat 0 -400px ;
+    min-height: 400px;
+}
+
+.content p
+{
+    display: block;
+    display: -webkit-box;
+    -webkit-line-clamp: 9;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.content h1
+{
+    text-transform: capitalize;
+    font-size: 26px;
+}
+.content button
+{
+    color: white;
+    background: rgba(70,130,180,0.7);
+    font-size: 16px;
+    border: none;
+    min-height: 35px;
+    border-radius: 2px;
+}
+
+#news
+{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+#news .news-content
+{
+    margin: auto;
+    background-color: rgba(0,0,0,0.1);
+    width: 23%;
+    padding: 10px;
+}
+
+.news img
+{
+    width: 100%;
+}
+
+#news .news-content .news-info p
+{
+    display: block;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: justify;
+}
+
+#news .news-content .news-info button
+{
+    height: 30px;
+    color: white;
+    background: rgba(70,130,180,0.7);
+    border: none;
+    border-radius: 4px;
+    font-size: 15px;
+}
+
+#ads .news-content a
+{
+    text-decoration: none;
+    color: rgb(70,130,180);
+}
+
+#ads .news-content a:hover
+{
+    color: red;
+}
+#ads
+{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+
+#ads .news-content
+{
+    margin: auto;
+    background-color: rgba(0,0,0,0.1);
+    width: 18%;
+    padding: 10px;
+}
+
+.news img
+{
+    width: 100%;
+}
+
+footer
+{
+    background: rgba(0, 0, 0, 1);
+    margin-top: 35px;
+}
+
+footer .container-fluid
+{
+    padding: 15px;
+}
+
+footer .container-fluid .footer-content
+{
+    margin: auto;
+    width: 19.5%;
+    padding: 2px;
+    float: left;
+}
+
+footer .container-fluid .footer-content hr
+{
+    width: 90%;
+}
+
+footer .container-fluid .footer-content h1
+{
+    color: rgb(70,130,180);
+    font-size: 18px;
+    margin: 15px;
+}
+
+footer .container-fluid .footer-content ul
+{
+    margin-left: 20px;
+    list-style: unstyled;
+}
+
+footer .container-fluid .footer-content ul li a
+{
+    color: white;
+    text-decoration: none;
+    padding: 5px;
+}
+
+footer .container-fluid .footer-content ul li a:hover
+{
+    color: rgb(70,130,180);
+}
+
+footer .copyright
+{
+    text-align: center;
+    color: white;
+    padding-bottom: 20px;
+    font-family: comic;
+    font-size: 18px;
+}
