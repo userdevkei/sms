@@ -31,8 +31,10 @@ return [
         ['label' => 'Other Charges', 'route' => 'finance.other-charges.index', 'permission' => 'other_charges.view'],
         ['label' => 'Exemptions & Scholarships', 'route' => 'finance.exemptions.index', 'permission' => 'exemptions.view'],
         ['label' => 'Fee Structures', 'route' => 'finance.fee-structures.index', 'permission' => 'fee_structures.view'],
-        ['label' => 'Voteheads', 'route' => 'finance.voteheads.index', 'permission' => 'fee_structures.view'],
+        ['label' => 'Vote heads', 'route' => 'finance.voteheads.index', 'permission' => 'fee_structures.view'],
         ['label' => 'Other Charge Types', 'route' => 'finance.other-charge-types.index', 'permission' => 'other_charges.view'],
+        ['label' => 'Fee Statement', 'route' => 'finance.my-statement', 'permission' => 'my-statement.view'],
+        ['label' => 'Payments', 'route' => 'finance.my-payments', 'permission' => 'my-payments.view'],
     ]],
 
     ['label' => 'Results', 'icon' => 'bi-journal-text', 'permission' => 'results.view', 'children' => [
@@ -61,14 +63,7 @@ return [
     ['label' => 'HR', 'icon' => 'bi-person-badge', 'route' => 'hr.index', 'permission' => 'hr.view'],
     ['label' => 'Accounting', 'icon' => 'bi-calculator', 'route' => 'accounting.index', 'permission' => 'accounting.view'],
 
-    ['label' => 'Reports', 'icon' => 'bi-bar-chart', 'permission' => null, 'children' => [
-        ['label' => 'Admissions Reports', 'route' => 'reports.admissions', 'permission' => 'reports.admissions'],
-        ['label' => 'Finance Reports', 'route' => 'reports.finance', 'permission' => 'reports.finance'],
-        ['label' => 'Academic Reports', 'route' => 'reports.academic', 'permission' => 'reports.academic'],
-        ['label' => 'Enrollment Reports', 'route' => 'reports.enrollment', 'permission' => 'reports.enrollment'],
-    ]],
-
-    ['label' => 'Administration', 'icon' => 'bi-gear', 'permission' => null, 'children' => [
+    ['label' => 'Administration', 'icon' => 'bi-gear', 'permission' => 'admin.view', 'children' => [
         ['label' => 'Users', 'route' => 'users.index', 'permission' => 'users.view'],
         ['label' => 'Roles & Permissions', 'route' => 'roles.index', 'permission' => 'roles.manage'],
         ['label' => 'School Settings', 'route' => 'settings.index', 'permission' => 'settings.manage'],

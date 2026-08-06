@@ -625,7 +625,7 @@
             document.getElementById('payment_provider').value = data?.provider ?? 'mpesa';
             document.getElementById('payment_environment').value = data?.environment ?? 'sandbox';
             document.getElementById('payment_shortcode').value = data?.shortcode ?? '';
-            document.getElementById('payment_callback_url').value = data?.callback_url ?? '';
+            document.getElementById('payment_callback_url').value = data?.callback_url ?? "{{ route('mpesa.callback') }}";
             document.getElementById('payment_bank_name').value = data?.bank_name ?? '';
             document.getElementById('payment_account_number').value = data?.account_number ?? '';
             document.getElementById('payment_endpoint_url').value = data?.endpoint_url ?? '';

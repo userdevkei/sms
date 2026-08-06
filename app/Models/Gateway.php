@@ -24,7 +24,7 @@ class Gateway extends Model
 
     public static function active(string $type): ?self
     {
-        return static::query()->where('type', $type)->where('is_active', true)->with('credentials')->first();
+        return static::query()->where('gateways.provider', $type)->where('is_active', true)->with('credentials')->first();
     }
 
     /** Returns credentials as a plain ['key' => 'decrypted value'] array — convenient for building an API client. */

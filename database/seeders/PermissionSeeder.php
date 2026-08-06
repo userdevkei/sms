@@ -42,7 +42,7 @@ class PermissionSeeder extends Seeder
                 'invoices.view'   => 'View invoices',
                 'invoices.create' => 'Generate term/supplementary invoices',
                 'invoices.update' => 'Adjust invoices',
-                'my-statements.view'   => 'View my fees statements',
+                'my-statement.view'   => 'View my fees statements',
             ],
             'payments' => [
                 'payments.view'      => 'View payments',
@@ -98,6 +98,7 @@ class PermissionSeeder extends Seeder
                 'users.manage'    => 'Create/edit/deactivate users',
                 'roles.manage'    => 'Manage roles & permissions',
                 'settings.manage' => 'Manage system settings',
+                'admin.view'      => 'View system admin functions',
             ],
         ];
 

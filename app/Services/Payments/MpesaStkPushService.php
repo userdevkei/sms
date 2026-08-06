@@ -2,7 +2,7 @@
 
 namespace App\Services\Payments;
 
-use App\Models\PaymentGateway;
+use App\Models\Gateway;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -14,9 +14,9 @@ use Illuminate\Support\Facades\Log;
  */
 class MpesaStkPushService
 {
-    private function activeGateway(): PaymentGateway
+    private function activeGateway(): Gateway
     {
-        $gateway = PaymentGateway::active();
+        $gateway = Gateway::active('mpesa');
 
         abort_unless($gateway && $gateway->provider === 'mpesa', 422, 'No active M-Pesa payment gateway is configured.');
 
@@ -92,4 +92,6 @@ class MpesaStkPushService
 
         return '254' . $phone;
     }
+
+
 }

@@ -40,8 +40,10 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\{AdminPaymentController,
     ChangePasswordController,
     EmailGatewayController,
+    MyPaymentsController,
     MyProfileController,
     MyResultsController,
+    MyStatementController,
     PaymentGatewayController,
     SmsGatewayController,
     StudentPaymentController,
@@ -564,4 +566,15 @@ Route::middleware('auth')->group(function () {
     Route::get('my-profile', [MyProfileController::class, 'show'])->name('profile.show');
     Route::get('my-profile/edit', [MyProfileController::class, 'edit'])->name('profile.edit');
     Route::put('my-profile', [MyProfileController::class, 'update'])->name('profile.update');
+
+    Route::get('my-statement', [MyStatementController::class, 'index'])->name('finance.my-statement');
+    Route::get('my-statement/pdf', [MyStatementController::class, 'pdf'])->name('finance.my-statement.pdf');
+
+    Route::get('my-payments', [MyPaymentsController::class, 'index'])->name('finance.my-payments');
+    Route::post('my-payments/initiate', [MyPaymentsController::class, 'initiate'])->name('finance.my-payments.initiate');
+    Route::post('my-payments/retry/{transaction}', [MyPaymentsController::class, 'retry'])->name('finance.my-payments.retry');
+    Route::get('my-payments/status/{transaction}', [MyPaymentsController::class, 'status'])->name('finance.my-payments.status');
+
+    // routes/web.php or api.php
+    Route::post('/mpesa/callback', [MyPaymentsController::class, 'handle'])->name('mpesa.callback')->withoutMiddleware(['auth', 'verified']); // adjust to whatever middleware wraps your web routes
 });

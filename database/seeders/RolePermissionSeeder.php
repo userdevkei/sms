@@ -42,6 +42,7 @@ class RolePermissionSeeder extends Seeder
                 'accommodation.view',
                 'hr.view',
                 'accounting.view',
+                'admin.view'
             ],
 
             'registrar' => [

@@ -7,7 +7,7 @@
             <h1 class="h4 mb-1">All Permissions</h1>
             <p class="text-muted mb-0">Reference list of every permission in the system, grouped by module.</p>
         </div>
-        <a href="{{ route('roles.index') }}" class="btn btn-outline-secondary">
+        <a href="{{ route('roles.index') }}" class="btn btn-sm btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i> Back to Roles
         </a>
     </div>
