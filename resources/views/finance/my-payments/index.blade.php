@@ -190,13 +190,10 @@
         }
 
         // ─────────────────────────────────────────────
-        // Row-level auto polling (table)
-        // Each transaction id has its own interval keyed
-        // in rowPolls; starting/stopping one id never
-        // touches any other id's interval or row.
+        // Row status checks — only triggered by the user
+        // clicking "I've Paid" for a specific transaction.
+        // No background intervals run on page load.
         // ─────────────────────────────────────────────
-        const rowPolls = {}; // id -> intervalId
-
         function statusBadgeClass(status) {
             return { success: 'bg-success', pending: 'bg-warning text-dark', failed: 'bg-danger', cancelled: 'bg-secondary' }[status] ?? 'bg-secondary';
         }
@@ -246,7 +243,6 @@
                 }
             }
 
-            if (data.status !== 'pending') stopRowPoll(id);
         }
 
         // Checks ONLY the given id/url — never touches other transactions.
@@ -257,38 +253,41 @@
             });
         }
 
-        function startRowPoll(id, url, { interval = 6000, maxAttempts = 30 } = {}) {
-            if (rowPolls[id]) return; // already polling this exact transaction, do nothing
-            let attempts = 0;
-            rowPolls[id] = setInterval(() => {
-                if (document.hidden) return;
-                attempts++;
-                checkTransactionStatus(id, url);
-                if (attempts >= maxAttempts) stopRowPoll(id);
-            }, interval);
-        }
-
-        function stopRowPoll(id) {
-            if (rowPolls[id]) {
-                clearInterval(rowPolls[id]);
-                delete rowPolls[id];
-            }
-        }
-
         // "I've Paid" click handler — scoped to the single id/url on the
-        // clicked button via its own dataset, so it only ever checks
-        // that one transaction, never the whole table.
+        // clicked button via its own dataset. It polls only THIS
+        // transaction a handful of times over ~20s, since the M-Pesa
+        // callback can lag a few seconds behind the user's click.
         function attachRowCheckHandler() {
             const id = this.dataset.id;
             const url = this.dataset.url;
-            this.disabled = true;
-            const original = this.innerHTML;
-            this.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Checking…`;
+            const btn = this;
 
-            checkTransactionStatus(id, url).finally(() => {
-                this.disabled = false;
-                this.innerHTML = original;
-            });
+            btn.disabled = true;
+            const original = btn.innerHTML;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Checking…`;
+
+            let attempts = 0;
+            const maxAttempts = 6; // ~ 6 * 3s = 18s
+            const poll = () => {
+                attempts++;
+                checkTransactionStatus(id, url).then(status => {
+                    if (status !== 'pending') {
+                        btn.disabled = false;
+                        btn.innerHTML = original;
+                        return;
+                    }
+                    if (attempts >= maxAttempts) {
+                        btn.disabled = false;
+                        btn.innerHTML = original;
+                        return;
+                    }
+                    setTimeout(poll, 3000);
+                }).catch(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = original;
+                });
+            };
+            poll();
         }
 
         function attachRetryPrefill() {
@@ -298,14 +297,8 @@
             document.getElementById('retryAlert').className = 'alert d-none';
         }
 
-        document.querySelectorAll('tr[id^="txn-row-"]').forEach(row => {
-            const id = row.id.replace('txn-row-', '');
-            const badge = row.querySelector('.txn-status');
-            const btn = row.querySelector('.check-status-btn');
-            if (badge && btn && badge.textContent.trim().toLowerCase() === 'pending') {
-                startRowPoll(id, btn.dataset.url);
-            }
-        });
+        // NOTE: no auto-polling on page load. Polling for a given transaction
+        // only starts when the user explicitly clicks "I've Paid" for it.
 
         document.querySelectorAll('.check-status-btn').forEach(btn => btn.addEventListener('click', attachRowCheckHandler));
 
@@ -348,10 +341,13 @@
 
                 if (status === 'success') {
                     statusEl.textContent = 'Payment confirmed!';
-                    // New transaction may not exist in the table yet (pay flow) — refresh
-                    // the table via ajax so the row appears, without touching other polls.
+                    // paymentsTable is a plain client-side DataTable (no ajax source),
+                    // so it has no ajax.reload() to call. If this is a brand-new
+                    // transaction (pay flow) that isn't in the table yet, the only
+                    // reliable way to show it is a full page reload.
                     if (!document.getElementById(`txn-row-${txnId}`)) {
-                        paymentsTable.ajax?.reload ? paymentsTable.ajax.reload(null, false) : location.reload();
+                        setTimeout(() => location.reload(), 1200);
+                        return; // skip the modal-hide timeout below; reload will handle it
                     }
                 } else if (status === 'failed' || status === 'cancelled') {
                     statusEl.textContent = 'Payment was not completed. You can retry from the table.';

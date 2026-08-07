@@ -170,8 +170,6 @@ Route::get('/grade-levels-streams', function (Request $request) {
     return response()->json($streams);
 })->name('grade-levels.streams');
 
-Route::post('mpesa/callback', [StudentPaymentController::class, 'callback'])->name('mpesa.callback');
-
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
@@ -544,6 +542,10 @@ Route::middleware('auth')->group(function () {
     Route::prefix('finance')->name('finance.')->middleware(['auth', 'can:payments.view'])->group(function () {
         Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
         Route::get('payments-data', [PaymentController::class, 'data'])->name('payments.data');
+        Route::get('payments-failed-data', [PaymentController::class, 'failedData'])->name('payments.failed-data');
+        Route::get('payments/{transaction}/validate', [PaymentController::class, 'validateTransaction'])->name('payments.validate');
+        Route::get('payments-export', [PaymentController::class, 'exportSuccessful'])->name('payments.export');
+        Route::get('payments-failed-export', [PaymentController::class, 'exportFailed'])->name('payments.failed-export');
     });
 
     Route::prefix('finance')->name('finance.')->middleware(['auth', 'can:payments.record'])->group(function () {
@@ -576,5 +578,6 @@ Route::middleware('auth')->group(function () {
     Route::get('my-payments/status/{transaction}', [MyPaymentsController::class, 'status'])->name('finance.my-payments.status');
 
     // routes/web.php or api.php
-    Route::post('/mpesa/callback', [MyPaymentsController::class, 'handle'])->name('mpesa.callback')->withoutMiddleware(['auth', 'verified']); // adjust to whatever middleware wraps your web routes
 });
+
+Route::post('/mpesa/callback', [MyPaymentsController::class, 'handle'])->name('mpesa.callback')->withoutMiddleware(['auth', 'verified']); // adjust to whatever middleware wraps your web routes

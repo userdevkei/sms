@@ -93,5 +93,40 @@ class MpesaStkPushService
         return '254' . $phone;
     }
 
+    // Add to MpesaStkPushService
 
+/**
+ * Actively queries Safaricom for the current state of an STK push,
+ * used as a fallback when the async callback hasn't arrived (common
+ * on sandbox). Returns Safaricom's raw response array.
+ */
+public function query(string $checkoutRequestId): array
+{
+    $gateway = $this->activeGateway();
+    $config = $gateway->config();
+
+    $token = $this->accessToken($config);
+
+    $timestamp = now()->format('YmdHis');
+    $password = base64_encode($config['shortcode'] . $config['passkey'] . $timestamp);
+
+    $response = Http::withToken($token)->post($this->baseUrl($config['environment']) . '/mpesa/stkpushquery/v1/query', [
+        'BusinessShortCode' => $config['shortcode'],
+        'Password'          => $password,
+        'Timestamp'         => $timestamp,
+        'CheckoutRequestID' => $checkoutRequestId,
+    ]);
+
+    if (! $response->successful()) {
+        Log::warning('M-Pesa STK query failed', ['response' => $response->body()]);
+        abort(502, 'Could not query M-Pesa transaction status.');
+    }
+
+    Log::info('M-Pesa STK query succeeded', [
+        'checkout_request_id' => $checkoutRequestId,
+        'response'            => $response->json(),
+    ]);
+
+    return $response->json();
+}
 }
