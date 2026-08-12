@@ -31,6 +31,7 @@ class PermissionSeeder extends Seeder
                 'students.import' => 'Bulk import students via Excel',
                 'students.delete' => 'Archive/delete student records',
                 'students.manage' => 'Add, edit, import, and delete students',
+                'students.statements' => 'View student statement',
             ],
             'fee_structures' => [
                 'fee_structures.view'    => 'View fee structures',

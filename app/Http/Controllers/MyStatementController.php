@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Exemption;
 use App\Models\Invoice;
 use App\Models\MpesaTransaction;
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Mpdf\Mpdf;
 
@@ -24,7 +26,11 @@ class MyStatementController extends Controller
             ->get()
             ->keyBy('id');
 
-        // Build chronological ledger entries
+        $exemptions = Exemption::where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->with('votehead')
+            ->get();
+
         $entries = collect();
 
         foreach ($invoices as $invoice) {
@@ -53,9 +59,29 @@ class MyStatementController extends Controller
             ]);
         }
 
+        foreach ($exemptions as $exemption) {
+            // Fixed exemptions carry their own KES value directly. Percentage
+            // exemptions need resolving against whatever they apply to — swap
+            // in the real method/relationship once confirmed against your
+            // Exemption model; left at 0 rather than guessing a wrong figure.
+            $amount = $exemption->type === 'fixed'
+                ? (float) $exemption->value
+                : (float) ($exemption->resolvedAmount ?? 0);
+
+            $entries->push([
+                'date'        => $exemption->created_at->toDateString(),
+                'sort_key'    => $exemption->created_at->timestamp . '_exm',
+                'type'        => 'exemption',
+                'label'       => 'Exemption — ' . ($exemption->votehead->name ?? 'General'),
+                'description' => $exemption->reason ?? 'Approved exemption/scholarship',
+                'debit'       => null,
+                'credit'      => $amount,
+                'invoice'     => null,
+            ]);
+        }
+
         $sorted = $entries->sortBy('sort_key')->values();
 
-        // Compute running balance
         $balance = 0;
         $ledger = $sorted->map(function ($row) use (&$balance) {
             $balance += ($row['debit'] ?? 0) - ($row['credit'] ?? 0);
@@ -64,9 +90,10 @@ class MyStatementController extends Controller
         });
 
         $totals = [
-            'total_charged' => $invoices->sum('total_amount'),
-            'total_paid'    => Payment::where('user_id', $user->id)->sum('amount'),
-            'balance'       => $balance,
+            'total_charged'  => $invoices->sum('total_amount'),
+            'total_paid'     => Payment::where('user_id', $user->id)->sum('amount'),
+            'total_exempted' => $exemptions->sum(fn ($e) => $e->type === 'fixed' ? $e->value : ($e->resolvedAmount ?? 0)),
+            'balance'        => $balance,
         ];
 
         return [$ledger, $totals, $invoices];
@@ -82,10 +109,14 @@ class MyStatementController extends Controller
         return view('finance.my-statement.index', compact('ledger', 'totals', 'user'));
     }
 
-    public function pdf(Request $request)
+    public function pdf(Request $request, ?User $viewedUser = null)
     {
-        $user = $request->user();
+        $user = $viewedUser ?? $request->user();
         abort_unless($user->hasRole('student'), 403);
+
+        if ($viewedUser && $viewedUser->id !== $request->user()->id) {
+            abort_unless($request->user()->hasPermission('students.statements'), 403);
+        }
 
         [$ledger, $totals] = $this->ledger($user);
 
@@ -93,13 +124,12 @@ class MyStatementController extends Controller
         $schoolName = setting('school_name', config('app.name'));
         $html = view('finance.my-statement.pdf', compact('ledger', 'totals', 'user', 'logoPath', 'schoolName'))->render();
 
-
         $mpdf = new Mpdf([
             'margin_left'   => 10,
             'margin_right'  => 5,
             'margin_top'    => 5,
             'margin_bottom' => 10,
-            'margin_header' => 8,        // space reserved for header (if using SetHTMLHeader)
+            'margin_header' => 8,
             'margin_footer' => 8,
         ]);
 

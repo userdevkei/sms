@@ -114,3 +114,13 @@
 @media (max-width: 420px) {
     .auth-form-header h2 { font-size: 1.35rem; }
 }
+
+.auth-submit-btn,
+.auth-submit-btn:hover,
+.auth-submit-btn:focus,
+.auth-submit-btn:active {
+    background-color: var(--brand-primary);
+    border-color: var(--brand-primary);
+    color: #fff;
+}
+.auth-submit-btn:hover { filter: brightness(1.1); }

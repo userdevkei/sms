@@ -39,22 +39,34 @@ class PaymentGatewayController extends Controller
 
     private function credentialFields(array $validated): array
     {
-        return $validated['provider'] === 'mpesa'
-            ? [
+        return match ($validated['provider']) {
+            'mpesa' => [
                 'environment'     => $validated['environment'],
                 'consumer_key'    => $validated['consumer_key'] ?? null,
                 'consumer_secret' => $validated['consumer_secret'] ?? null,
                 'shortcode'       => $validated['shortcode'],
                 'passkey'         => $validated['passkey'] ?? null,
-                'callback_url'    => $validated['callback_url'],
-            ]
-            : [
-                'bank_name'      => $validated['bank_name'],
-                'api_key'        => $validated['api_key'] ?? null,
-                'api_secret'     => $validated['api_secret'] ?? null,
-                'account_number' => $validated['account_number'],
-                'endpoint_url'   => $validated['endpoint_url'],
-            ];
+            ],
+            'equity' => [
+                'environment'     => $validated['environment'],
+                'account_number'  => $validated['account_number'],
+                'ipn_username'    => $validated['ipn_username'],
+                'ipn_password'    => $validated['ipn_password'] ?? null,
+            ],
+            'kcb' => [
+                'environment'     => $validated['environment'],
+                'account_number'  => $validated['account_number'],
+                'kcb_public_key'  => $validated['kcb_public_key'] ?? null,
+                'consumer_key'    => $validated['consumer_key'] ?? null,
+                'consumer_secret' => $validated['consumer_secret'] ?? null,
+            ],
+            'coop' => [
+                'environment'     => $validated['environment'],
+                'account_number'  => $validated['account_number'],
+                'api_key'         => $validated['api_key'] ?? null,
+                'ipn_key'         => $validated['ipn_key'] ?? null,
+            ],
+        };
     }
 
     public function activate(Gateway $paymentGateway): JsonResponse
@@ -63,7 +75,9 @@ class PaymentGatewayController extends Controller
         abort_unless($paymentGateway->type === 'payment', 404);
 
         DB::transaction(function () use ($paymentGateway) {
-            Gateway::query()->where('type', 'payment')->where('id', '!=', $paymentGateway->id)->update(['is_active' => false]);
+            Gateway::query()->where('type', 'payment')
+                ->where('provider', '=', $paymentGateway->provider)
+                ->update(['is_active' => false]);
             $paymentGateway->update(['is_active' => true]);
         });
 

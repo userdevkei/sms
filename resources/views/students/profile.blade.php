@@ -58,14 +58,6 @@
                                 <span class="kv-status-dot"></span> {{ ucfirst($user->status) }}
                             </span>
                         </div>
-
-                        <form method="POST" action="{{ route('users.toggleStatus', $user->id) }}" class="mt-3">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="btn-kv-toggle w-100 justify-content-center {{ $user->status === 'active' ? 'is-danger' : 'is-success' }}">
-                                {{ $user->status === 'active' ? 'Deactivate' : 'Activate' }}
-                            </button>
-                        </form>
                     </div>
                 </div>
 

@@ -15,7 +15,8 @@
         "laravel/tinker": "^3.0",
         "mpdf/mpdf": "*",
         "phpoffice/phpspreadsheet": "^5.9",
-        "ext-pdo": "*"
+        "ext-pdo": "*",
+        "ext-openssl": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

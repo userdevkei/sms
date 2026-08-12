@@ -11,10 +11,7 @@ class Payment extends Model
 {
     use HasStringId, softDeletes;
 
-    protected $fillable = [
-        'id', 'payment_number', 'invoice_id', 'user_id', 'method', 'amount',
-        'reference_number', 'paid_on', 'received_by', 'notes',
-    ];
+    protected $fillable = ['id', 'payment_number', 'invoice_id', 'user_id', 'method', 'amount', 'reference_number', 'paid_on', 'received_by', 'notes', 'gateway', 'gateway_transaction_id'];
 
     protected function casts(): array
     {

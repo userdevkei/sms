@@ -20,6 +20,16 @@
             --brand-primary: {{ setting('primary_color', '#0B3D62') }};
             --brand-secondary: {{ setting('secondary_color', '#0E8388') }};
         }
+
+        .auth-submit-btn {
+            background: var(--brand-primary);
+            color: #fff;
+            border: none;
+            padding: .75rem 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: .98rem;
+        }
     </style>
 </head>
 <body class="auth-body">

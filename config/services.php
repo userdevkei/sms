@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'kcb_buni' => [
+        'sandbox_base_url' => env('KCB_BUNI_SANDBOX_URL', 'https://uat.buni.kcbgroup.com'),
+        'live_base_url'    => env('KCB_BUNI_LIVE_URL', 'https://api.buni.kcbgroup.com'),
+    ],
+
 ];

@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->validateCsrfTokens(except: [
             'mpesa/callback',
+            'webhooks/banks/*'
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

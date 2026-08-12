@@ -1,43 +1,12 @@
 <?php
 
-use App\Http\Controllers\AcademicTermController;
-use App\Http\Controllers\AssessmentController;
-use App\Http\Controllers\AssessmentTypeController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\DriverController;
-use App\Http\Controllers\EducationLevelController;
-use App\Http\Controllers\EnrollmentController;
-use App\Http\Controllers\GradeLevelController;
-use App\Http\Controllers\GradingBandController;
-use App\Http\Controllers\HostelController;
-use App\Http\Controllers\LearningAreaController;
-use App\Http\Controllers\MarksEntryController;
-use App\Http\Controllers\PathwayClassificationController;
-use App\Http\Controllers\PathwayController;
-use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\ProgressionController;
-use App\Http\Controllers\ProgressionExceptionController;
-use App\Http\Controllers\ReportCardController;
-use App\Http\Controllers\ReportCardPdfController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\RoomAllocationController;
-use App\Http\Controllers\RoomController;
-use App\Http\Controllers\RoomReservationController;
-use App\Http\Controllers\RouteAssignmentController;
-use App\Http\Controllers\StreamController;
-use App\Http\Controllers\StudentController;
-use App\Http\Controllers\SubjectTeacherAssignmentController;
-use App\Http\Controllers\TermResultCompletionController;
-use App\Http\Controllers\TermSubjectResultController;
-use App\Http\Controllers\TransportRouteController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\VehicleController;
 use App\Models\Stream;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Http\Request;
 
-use App\Http\Controllers\{AdminPaymentController,
+use App\Http\Controllers\{AdminPaymentController, VehicleController, UserController, TransportRouteController, TermSubjectResultController, TermResultCompletionController, SubjectTeacherAssignmentController, StudentController, StreamController, RouteAssignmentController, RoomReservationController, RoomController, RoomAllocationController, RoleController, ReportCardPdfController, ReportCardController, ProgressionExceptionController, ProgressionController, PermissionController, PathwayController, PathwayClassificationController, MarksEntryController, LearningAreaController, HostelController, GradingBandController, GradeLevelController, EnrollmentController, EducationLevelController, DriverController, DashboardController, AssessmentTypeController, AssessmentController, AcademicTermController,
+    BankWebhookController,
     ChangePasswordController,
     EmailGatewayController,
     MyPaymentsController,
@@ -55,7 +24,7 @@ use App\Http\Controllers\{AdminPaymentController,
     ExemptionController,
     InvoiceController,
     PaymentController,
-    StudentStatementController};
+    StudentStatementController,};
 
 Route::prefix('finance')->name('finance.')->middleware(['auth', 'can:fee_structures.view'])->group(function () {
     Route::get('voteheads', [VoteheadController::class, 'index'])->name('voteheads.index');
@@ -211,7 +180,6 @@ Route::middleware('auth')->group(function () {
 
         Route::get('export-pdf', [UserController::class, 'exportPdf'])->name('export.pdf')->middleware('can:users.view');
         Route::get('export-excel', [UserController::class, 'exportExcel'])->name('export.excel')->middleware('can:users.view');
-        // import.* routes removed from here — moved to students.* below
     });
 
     Route::prefix('students')->name('students.')->group(function () {
@@ -232,6 +200,10 @@ Route::middleware('auth')->group(function () {
 
         Route::get('export-pdf', [StudentController::class, 'exportPdf'])->name('export.pdf')->middleware('can:users.view');
         Route::get('export-excel', [StudentController::class, 'exportExcel'])->name('export.excel')->middleware('can:users.view');
+
+        Route::get('/students/{viewedUser}/statement/pdf', [MyStatementController::class, 'pdf'])
+            ->name('statement.pdf')
+            ->middleware('can:students.statements');
     });
 
     Route::prefix('roles')->name('roles.')->group( function () {
@@ -581,3 +553,13 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::post('/mpesa/callback', [MyPaymentsController::class, 'handle'])->name('mpesa.callback')->withoutMiddleware(['auth', 'verified']); // adjust to whatever middleware wraps your web routes
+
+// routes/web.php or a dedicated routes/webhooks.php
+Route::prefix('webhooks/banks')->group(function () {
+    Route::post('equity', [BankWebhookController::class, 'equity'])->withoutMiddleware(['auth', 'verified'])->name('webhooks.banks.equity');
+    Route::post('coop', [BankWebhookController::class, 'coop'])->withoutMiddleware(['auth', 'verified'])->name('webhooks.banks.coop');
+    Route::post('kcb', [BankWebhookController::class, 'kcb'])->withoutMiddleware(['auth', 'verified'])->name('webhooks.banks.kcb');
+});
+
+Route::post('settings/payment-gateways/kcb/fetch-ipn-signature', [BankWebhookController::class, 'fetch'])
+    ->name('settings.payment-gateways.kcb.fetch-ipn-signature');

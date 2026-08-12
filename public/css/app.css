@@ -35,7 +35,6 @@ body {
     width: var(--sidebar-width);
     background: linear-gradient(180deg, var(--brand-sidebar) 0%, color-mix(in srgb, var(--brand-sidebar) 85%, black) 100%);
     color: rgba(255, 255, 255, .85);
-    z-index: 1040;
     flex-shrink: 0;
 }
 .app-sidebar .offcanvas-header { border-bottom: 1px solid rgba(255,255,255,.1); }
@@ -55,6 +54,7 @@ body {
         transform: none !important;
         box-shadow: none;
         transition: width .2s ease;
+        z-index: 1;
     }
     body.sidebar-collapsed .app-sidebar { width: var(--sidebar-width-collapsed); }
     body.sidebar-collapsed .app-sidebar .app-menu-label,

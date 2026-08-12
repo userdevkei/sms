@@ -219,7 +219,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table {{--id="paymentGatewaysTable"--}} class="table table-hover align-middle w-100">
+                        <table id="paymentGatewaysTable" class="table table-hover align-middle w-100  fs-sm table-striped">
                             <thead><tr><th>Name</th><th>Provider</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
                             <tbody>
                             @forelse($paymentGateways as $gw)
@@ -390,72 +390,152 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
+                        @if ($errors->any())
+                            <div class="alert alert-danger" id="paymentFormErrors">
+                                <ul class="mb-0 ps-3">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
                         <div class="mb-2">
                             <label class="form-label">Name <span class="text-danger">*</span></label>
-                            <input type="text" name="name" id="payment_name" class="form-control" required>
+                            <input type="text" name="name" id="payment_name" class="form-control" value="{{ old('name') }}" required>
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Provider <span class="text-danger">*</span></label>
                             <select name="provider" id="payment_provider" class="form-select" required onchange="togglePaymentProviderFields()">
                                 <option value="mpesa">M-Pesa (Daraja)</option>
-                                <option value="bank_api">Bank API</option>
+                                <option value="equity">Equity Bank (Jenga IPN)</option>
+                                <option value="kcb">KCB (Buni IPN)</option>
+                                <option value="coop">Co-operative Bank</option>
                             </select>
                         </div>
 
+                        {{-- ---- M-PESA ---- --}}
                         <div id="payment_mpesa_fields">
                             <div class="mb-2">
                                 <label class="form-label">Environment <span class="text-danger">*</span></label>
-                                <select name="environment" id="payment_environment" class="form-select">
-                                    <option value="sandbox">Sandbox</option>
-                                    <option value="live">Live</option>
+                                <select name="environment" id="payment_mpesa_environment" class="form-select">
+                                    <option value="sandbox" @selected(old('environment') === 'sandbox')>Sandbox</option>
+                                    <option value="live" @selected(old('environment') === 'live')>Live</option>
                                 </select>
                             </div>
                             <div class="mb-2">
                                 <label class="form-label">Consumer Key</label>
-                                <input type="password" name="consumer_key" id="payment_consumer_key" class="form-control" autocomplete="new-password">
-                                <small class="text-muted" id="payment_consumer_key_hint"></small>
+                                <input type="password" name="consumer_key" id="payment_mpesa_consumer_key" class="form-control" autocomplete="new-password">
+                                <small class="text-muted" id="payment_mpesa_consumer_key_hint"></small>
                             </div>
                             <div class="mb-2">
                                 <label class="form-label">Consumer Secret</label>
-                                <input type="password" name="consumer_secret" id="payment_consumer_secret" class="form-control" autocomplete="new-password">
-                                <small class="text-muted" id="payment_consumer_secret_hint"></small>
+                                <input type="password" name="consumer_secret" id="payment_mpesa_consumer_secret" class="form-control" autocomplete="new-password">
+                                <small class="text-muted" id="payment_mpesa_consumer_secret_hint"></small>
                             </div>
                             <div class="mb-2">
                                 <label class="form-label">Shortcode <span class="text-danger">*</span></label>
-                                <input type="text" name="shortcode" id="payment_shortcode" class="form-control">
+                                <input type="text" name="shortcode" id="payment_mpesa_shortcode" class="form-control" value="{{ old('shortcode') }}">
                             </div>
                             <div class="mb-2">
                                 <label class="form-label">Passkey</label>
-                                <input type="password" name="passkey" id="payment_passkey" class="form-control" autocomplete="new-password">
-                                <small class="text-muted" id="payment_passkey_hint"></small>
+                                <input type="password" name="passkey" id="payment_mpesa_passkey" class="form-control" autocomplete="new-password">
+                                <small class="text-muted" id="payment_mpesa_passkey_hint"></small>
                             </div>
                             <div class="mb-2">
-                                <label class="form-label">Callback URL <span class="text-danger">*</span></label>
-                                <input type="url" name="callback_url" id="payment_callback_url" class="form-control">
+                                <label class="form-label">Callback URL</label>
+                                <input type="url" class="form-control" value="{{ route('mpesa.callback') }}" readonly>
                             </div>
                         </div>
 
-                        <div id="payment_bank_api_fields" class="d-none">
+                        {{-- ---- EQUITY (Jenga IPN) ---- --}}
+                        <div id="payment_equity_fields" class="d-none">
                             <div class="mb-2">
-                                <label class="form-label">Bank Name <span class="text-danger">*</span></label>
-                                <input type="text" name="bank_name" id="payment_bank_name" class="form-control">
+                                <label class="form-label">Environment <span class="text-danger">*</span></label>
+                                <select name="environment" id="payment_equity_environment" class="form-select">
+                                    <option value="sandbox" @selected(old('environment') === 'sandbox')>Sandbox</option>
+                                    <option value="live" @selected(old('environment') === 'live')>Live</option>
+                                </select>
                             </div>
                             <div class="mb-2">
-                                <label class="form-label">API Key</label>
-                                <input type="password" name="api_key" id="payment_api_key" class="form-control" autocomplete="new-password">
-                                <small class="text-muted" id="payment_api_key_hint"></small>
+                                <label class="form-label">Account / Bill Number <span class="text-danger">*</span></label>
+                                <input type="text" name="account_number" id="payment_equity_account_number" class="form-control" value="{{ old('account_number') }}">
+                                <small class="text-muted">Tell parents/tellers to use the student's admission number as the Bill Number.</small>
                             </div>
                             <div class="mb-2">
-                                <label class="form-label">API Secret</label>
-                                <input type="password" name="api_secret" id="payment_api_secret" class="form-control" autocomplete="new-password">
+                                <label class="form-label">IPN Basic Auth Username <span class="text-danger">*</span></label>
+                                <input type="text" name="ipn_username" id="payment_equity_ipn_username" class="form-control" autocomplete="off" value="{{ old('ipn_username') }}">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">IPN Basic Auth Password <span class="text-danger">*</span></label>
+                                <input type="password" name="ipn_password" id="payment_equity_ipn_password" class="form-control" autocomplete="new-password">
+                                <small class="text-muted" id="payment_equity_ipn_password_hint"></small>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Callback URL (register this with Equity)</label>
+                                <input type="url" class="form-control" value="{{ route('webhooks.banks.equity') }}" readonly>
+                            </div>
+                        </div>
+
+                        {{-- ---- KCB (Buni IPN) ---- --}}
+                        <div id="payment_kcb_fields" class="d-none">
+                            <div class="mb-2">
+                                <label class="form-label">Environment <span class="text-danger">*</span></label>
+                                <select name="environment" id="payment_kcb_environment" class="form-select">
+                                    <option value="sandbox" @selected(old('environment') === 'sandbox')>Sandbox</option>
+                                    <option value="live" @selected(old('environment') === 'live')>Live</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Till / Organization Short Code <span class="text-danger">*</span></label>
+                                <input type="text" name="account_number" id="payment_kcb_account_number" class="form-control" value="{{ old('account_number') }}">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">KCB Public Key (PEM) <span class="text-danger">*</span></label>
+                                <textarea name="kcb_public_key" id="payment_kcb_public_key" class="form-control" rows="4" placeholder="-----BEGIN PUBLIC KEY-----&#10;...&#10;-----END PUBLIC KEY-----">{{ old('kcb_public_key') }}</textarea>
+                                <small class="text-muted">Used to verify the SHA256withRSA signature KCB attaches to every IPN. Issued to you during IPN onboarding — this is a public key, not a secret, so it's fine to display in full.</small>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Consumer Key</label>
+                                <input type="password" name="consumer_key" id="payment_kcb_consumer_key" class="form-control" autocomplete="new-password">
+                                <small class="text-muted">Only needed for outbound Buni calls (e.g. STK Push) — not required for IPN alone.</small>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Consumer Secret</label>
+                                <input type="password" name="consumer_secret" id="payment_kcb_consumer_secret" class="form-control" autocomplete="new-password">
+                                <small class="text-muted" id="payment_kcb_consumer_secret_hint"></small>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Callback URL (register this with KCB)</label>
+                                <input type="url" class="form-control" value="{{ route('webhooks.banks.kcb') }}" readonly>
+                            </div>
+                        </div>
+
+                        {{-- ---- CO-OP BANK ---- --}}
+                        <div id="payment_coop_fields" class="d-none">
+                            <div class="mb-2">
+                                <label class="form-label">Environment <span class="text-danger">*</span></label>
+                                <select name="environment" id="payment_coop_environment" class="form-select">
+                                    <option value="sandbox" @selected(old('environment') === 'sandbox')>Sandbox</option>
+                                    <option value="live" @selected(old('environment') === 'live')>Live</option>
+                                </select>
                             </div>
                             <div class="mb-2">
                                 <label class="form-label">Account Number <span class="text-danger">*</span></label>
-                                <input type="text" name="account_number" id="payment_account_number" class="form-control">
+                                <input type="text" name="account_number" id="payment_coop_account_number" class="form-control" value="{{ old('account_number') }}">
                             </div>
                             <div class="mb-2">
-                                <label class="form-label">Endpoint URL <span class="text-danger">*</span></label>
-                                <input type="url" name="endpoint_url" id="payment_endpoint_url" class="form-control">
+                                <label class="form-label">API Key</label>
+                                <input type="password" name="api_key" id="payment_coop_api_key" class="form-control" autocomplete="new-password">
+                                <small class="text-muted" id="payment_coop_api_key_hint"></small>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">IPN Auth Value</label>
+                                <input type="password" name="ipn_key" id="payment_coop_ipn_key" class="form-control" autocomplete="new-password">
+                                <small class="text-muted">Unconfirmed field — update once Co-op's actual IPN auth spec is confirmed.</small>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Callback URL (register this with Co-op)</label>
+                                <input type="url" class="form-control" value="{{ route('webhooks.banks.coop') }}" readonly>
                             </div>
                         </div>
                     </div>
@@ -539,6 +619,12 @@
     <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            @if ($errors->any() && old('provider'))
+            document.getElementById('payment_provider').value = @json(old('provider'));
+            togglePaymentProviderFields();
+            new bootstrap.Modal(document.getElementById('paymentModal')).show();
+            @endif
+
             function bindPreview(inputId, imgId, iconId) {
                 var input = document.getElementById(inputId);
                 var img = document.getElementById(imgId);
@@ -579,6 +665,9 @@
             destroy: (type, id) => `/settings/${type}-gateways/${id}`,
         };
 
+        // Payment providers that share one visible fieldset each, keyed by provider value.
+        const PAYMENT_PROVIDER_FIELDSETS = ['mpesa', 'equity', 'kcb', 'coop'];
+
         function toggleSmsProviderFields() {
             const isAt = document.getElementById('sms_provider').value === 'africas_talking';
             document.getElementById('sms_africas_talking_fields').classList.toggle('d-none', !isAt);
@@ -586,9 +675,20 @@
         }
 
         function togglePaymentProviderFields() {
-            const isMpesa = document.getElementById('payment_provider').value === 'mpesa';
-            document.getElementById('payment_mpesa_fields').classList.toggle('d-none', !isMpesa);
-            document.getElementById('payment_bank_api_fields').classList.toggle('d-none', isMpesa);
+            const provider = document.getElementById('payment_provider').value;
+            PAYMENT_PROVIDER_FIELDSETS.forEach(p => {
+                const fieldset = document.getElementById('payment_' + p + '_fields');
+                const isActive = p === provider;
+                fieldset.classList.toggle('d-none', !isActive);
+                // Disabled inputs are excluded from form submission entirely —
+                // required since equity/kcb/coop all reuse names like
+                // "account_number" and "environment"; without this, every
+                // hidden fieldset's value gets submitted too, and the last
+                // one in DOM order silently wins over whichever you filled in.
+                fieldset.querySelectorAll('input, select, textarea').forEach(el => {
+                    el.disabled = !isActive;
+                });
+            });
         }
 
         function openSmsModal(data) {
@@ -617,26 +717,46 @@
         function openPaymentModal(data) {
             const form = document.getElementById('paymentForm');
             const isEdit = !!data;
+            const provider = data?.provider ?? 'mpesa';
+            const hint = isEdit ? 'Leave blank to keep the current value.' : '';
+
             document.getElementById('paymentModalTitle').textContent = isEdit ? 'Edit Payment Gateway' : 'Add Payment Gateway';
             form.action = isEdit ? routes.paymentUpdate(data.id) : routes.paymentStore;
             document.getElementById('paymentMethodField').innerHTML = isEdit ? '@method('PATCH')' : '';
 
             document.getElementById('payment_name').value = data?.name ?? '';
-            document.getElementById('payment_provider').value = data?.provider ?? 'mpesa';
-            document.getElementById('payment_environment').value = data?.environment ?? 'sandbox';
-            document.getElementById('payment_shortcode').value = data?.shortcode ?? '';
-            document.getElementById('payment_callback_url').value = data?.callback_url ?? "{{ route('mpesa.callback') }}";
-            document.getElementById('payment_bank_name').value = data?.bank_name ?? '';
-            document.getElementById('payment_account_number').value = data?.account_number ?? '';
-            document.getElementById('payment_endpoint_url').value = data?.endpoint_url ?? '';
+            document.getElementById('payment_provider').value = provider;
 
-            ['consumer_key', 'consumer_secret', 'passkey', 'api_key', 'api_secret'].forEach(f => {
-                document.getElementById('payment_' + f).value = '';
-            });
-            const hint = isEdit ? 'Leave blank to keep the current value.' : '';
-            ['payment_consumer_key_hint', 'payment_consumer_secret_hint', 'payment_passkey_hint', 'payment_api_key_hint'].forEach(id => {
-                document.getElementById(id).textContent = hint;
-            });
+            // Reset every secret field across all providers, then repopulate
+            // non-secret fields for the active provider only.
+            [
+                'payment_mpesa_consumer_key', 'payment_mpesa_consumer_secret', 'payment_mpesa_passkey',
+                'payment_equity_ipn_password',
+                'payment_kcb_consumer_key', 'payment_kcb_consumer_secret',
+                'payment_coop_api_key', 'payment_coop_ipn_key',
+            ].forEach(id => { document.getElementById(id).value = ''; });
+
+            [
+                'payment_mpesa_consumer_key_hint', 'payment_mpesa_consumer_secret_hint', 'payment_mpesa_passkey_hint',
+                'payment_equity_ipn_password_hint',
+                'payment_kcb_consumer_secret_hint',
+                'payment_coop_api_key_hint',
+            ].forEach(id => { document.getElementById(id).textContent = hint; });
+
+            document.getElementById('payment_mpesa_environment').value = data?.environment ?? 'sandbox';
+            document.getElementById('payment_mpesa_shortcode').value = data?.shortcode ?? '';
+
+            document.getElementById('payment_equity_environment').value = data?.environment ?? 'sandbox';
+            document.getElementById('payment_equity_account_number').value = data?.account_number ?? '';
+            document.getElementById('payment_equity_ipn_username').value = data?.ipn_username ?? '';
+
+            document.getElementById('payment_kcb_environment').value = data?.environment ?? 'sandbox';
+            document.getElementById('payment_kcb_account_number').value = data?.account_number ?? '';
+            // Public key, not a secret — safe to populate directly on edit.
+            document.getElementById('payment_kcb_public_key').value = data?.kcb_public_key ?? '';
+
+            document.getElementById('payment_coop_environment').value = data?.environment ?? 'sandbox';
+            document.getElementById('payment_coop_account_number').value = data?.account_number ?? '';
 
             togglePaymentProviderFields();
             new bootstrap.Modal(document.getElementById('paymentModal')).show();

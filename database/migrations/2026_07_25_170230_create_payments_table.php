@@ -11,13 +11,15 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->string('id', 12)->primary();
             $table->string('payment_number')->unique(); // e.g. RCT-2026-000456
-            $table->string('invoice_id', 12);
+            $table->string('invoice_id', 12)->nullable();
             $table->string('user_id', 12); // denormalized from invoice for fast querying/reporting
             $table->enum('method', ['cash', 'mpesa', 'bank']);
+            $table->string('gateway')->nullable();
+            $table->string('gateway_transaction_id')->nullable()->unique();
             $table->decimal('amount', 10, 2);
             $table->string('reference_number')->nullable(); // M-Pesa code, bank deposit slip number, etc.
             $table->date('paid_on');
-            $table->string('received_by', 12);
+            $table->string('received_by', 12)->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();

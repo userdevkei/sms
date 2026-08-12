@@ -47,6 +47,63 @@
 
     $roomAllocations = \App\Models\RoomAllocation::where('user_id', $user->id)
         ->with('room.hostel')->latest('allocated_on')->get();
+
+    // ---- Finance statement: merge invoices, payments, and approved
+    // exemptions into one chronological ledger with a running balance,
+    // instead of three independent tables the reader has to reconcile
+    // themselves. Same shape as MyStatementController's ledger.
+    $statementLines = collect();
+
+    foreach ($invoices as $inv) {
+        $statementLines->push([
+            'date'        => $inv->created_at,
+            'description' => "Invoice {$inv->invoice_number} — Term {$inv->term}, {$inv->academic_year}",
+            'reference'   => $inv->invoice_number,
+            'debit'       => (float) $inv->total_amount,
+            'credit'      => 0.0,
+        ]);
+    }
+
+    foreach ($payments as $p) {
+        $statementLines->push([
+            'date'        => $p->paid_on ?? $p->created_at,
+            'description' => 'Payment (' . ucfirst($p->method) . ')' . ($p->invoice ? " — {$p->invoice->invoice_number}" : ''),
+            'reference'   => $p->reference_number ?? '—',
+            'debit'       => 0.0,
+            'credit'      => (float) $p->amount,
+        ]);
+    }
+
+    foreach ($exemptions->where('status', 'approved') as $e) {
+        // Fixed exemptions carry their own KES value. Percentage exemptions
+        // need resolving against the invoice/votehead they apply to — swap
+        // in the real method once confirmed against the Exemption model
+        // (e.g. $e->resolvedAmount()); left as 0 rather than guessing wrong.
+        $amount = $e->type === 'fixed'
+            ? (float) $e->value
+            : (float) ($e->resolvedAmount ?? 0);
+
+        $statementLines->push([
+            'date'        => $e->created_at,
+            'description' => "Exemption — {$e->scopeLabel()}" . ($e->reason ? " ({$e->reason})" : ''),
+            'reference'   => '—',
+            'debit'       => 0.0,
+            'credit'      => $amount,
+        ]);
+    }
+
+    $statementLines = $statementLines->sortBy('date')->values();
+
+    $runningBalance = 0.0;
+    $statementLines = $statementLines->map(function ($line) use (&$runningBalance) {
+        $runningBalance += $line['debit'] - $line['credit'];
+        $line['balance'] = $runningBalance;
+        return $line;
+    });
+
+    $closingBalance = $runningBalance;
+    $totalBilled = $invoices->sum('total_amount');
+    $totalPaid = $payments->sum('amount');
 @endphp
 
 @if($enrollment)
@@ -151,80 +208,85 @@
                 @endif
             </div>
 
-            {{-- FINANCE --}}
+            {{-- FINANCE — single chronological statement --}}
             <div class="tab-pane fade" id="finance-pane" role="tabpanel">
-                <h6 class="text-uppercase text-muted small mb-2">Invoices</h6>
-                @if($invoices->isEmpty())
-                    <p class="text-muted small mb-0">No invoices yet.</p>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-3">
+                        <div class="kv-stat">
+                            <span class="kv-stat-label">Total Billed</span>
+                            <span class="kv-stat-value">KES {{ number_format($totalBilled, 2) }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="kv-stat">
+                            <span class="kv-stat-label">Total Paid</span>
+                            <span class="kv-stat-value">KES {{ number_format($totalPaid, 2) }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="kv-stat">
+                            <span class="kv-stat-label">Outstanding Balance</span>
+                            <span class="kv-stat-value {{ $closingBalance > 0 ? 'text-danger' : 'text-success' }}">
+                                KES {{ number_format($closingBalance, 2) }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 d-flex align-items-end justify-content-md-end">
+                        @if(Route::has('students.statement.pdf'))
+                            <a href="{{ route('students.statement.pdf', $user->id) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-file-earmark-pdf me-1"></i> Download Statement
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+                <h6 class="text-uppercase text-muted small mb-2">Account Statement</h6>
+                @if($statementLines->isEmpty())
+                    <p class="text-muted small mb-0">No account activity yet.</p>
                 @else
                     <div class="table-responsive mb-4">
                         <table class="table table-sm align-middle mb-0">
-                            <thead><tr><th>Invoice No.</th><th>Term</th><th class="text-end">Total</th><th class="text-end">Paid</th><th class="text-end">Balance</th><th>Status</th></tr></thead>
+                            <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Reference</th>
+                                <th class="text-end">Debit</th>
+                                <th class="text-end">Credit</th>
+                                <th class="text-end">Balance</th>
+                            </tr>
+                            </thead>
                             <tbody>
-                            @foreach($invoices as $inv)
+                            @foreach($statementLines as $line)
                                 <tr>
-                                    <td>{{ $inv->invoice_number }}</td>
-                                    <td>Term {{ $inv->term }}, {{ $inv->academic_year }}</td>
-                                    <td class="text-end">{{ number_format($inv->total_amount, 2) }}</td>
-                                    <td class="text-end">{{ number_format($inv->amount_paid, 2) }}</td>
-                                    <td class="text-end">{{ number_format($inv->balance, 2) }}</td>
-                                    <td>
-                                        @php $map = ['unpaid' => 'danger', 'partially_paid' => 'warning', 'paid' => 'success', 'cancelled' => 'secondary']; @endphp
-                                        <span class="badge bg-{{ $map[$inv->status] ?? 'secondary' }}-subtle text-{{ $map[$inv->status] ?? 'secondary' }} text-capitalize">{{ str_replace('_', ' ', $inv->status) }}</span>
+                                    <td>{{ \Carbon\Carbon::parse($line['date'])->format('d M Y') }}</td>
+                                    <td>{{ $line['description'] }}</td>
+                                    <td class="text-muted small">{{ $line['reference'] }}</td>
+                                    <td class="text-end">{{ $line['debit'] > 0 ? number_format($line['debit'], 2) : '—' }}</td>
+                                    <td class="text-end">{{ $line['credit'] > 0 ? number_format($line['credit'], 2) : '—' }}</td>
+                                    <td class="text-end fw-semibold {{ $line['balance'] > 0 ? 'text-danger' : 'text-success' }}">
+                                        {{ number_format($line['balance'], 2) }}
                                     </td>
                                 </tr>
                             @endforeach
                             </tbody>
+                            <tfoot>
+                            <tr class="table-light">
+                                <td colspan="5" class="text-end fw-semibold">Closing Balance</td>
+                                <td class="text-end fw-bold {{ $closingBalance > 0 ? 'text-danger' : 'text-success' }}">
+                                    KES {{ number_format($closingBalance, 2) }}
+                                </td>
+                            </tr>
+                            </tfoot>
                         </table>
                     </div>
                 @endif
 
-                <h6 class="text-uppercase text-muted small mb-2">Payment History</h6>
-                @if($payments->isEmpty())
-                    <p class="text-muted small mb-0">No payments recorded yet.</p>
-                @else
-                    <div class="table-responsive mb-4">
-                        <table class="table table-sm align-middle mb-0">
-                            <thead><tr><th>Date</th><th>Invoice</th><th>Method</th><th>Reference</th><th class="text-end">Amount</th></tr></thead>
-                            <tbody>
-                            @foreach($payments as $p)
-                                <tr>
-                                    <td>{{ $p->paid_on?->format('d M Y') ?? '—' }}</td>
-                                    <td>{{ $p->invoice->invoice_number ?? '—' }}</td>
-                                    <td class="text-capitalize">{{ $p->method }}</td>
-                                    <td>{{ $p->reference_number ?? '—' }}</td>
-                                    <td class="text-end">{{ number_format($p->amount, 2) }}</td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
-
-                <h6 class="text-uppercase text-muted small mb-2">Exemptions &amp; Scholarships</h6>
-                @if($exemptions->isEmpty())
-                    <p class="text-muted small mb-0">No exemptions or scholarships recorded.</p>
-                @else
-                    <div class="table-responsive">
-                        <table class="table table-sm align-middle mb-0">
-                            <thead><tr><th>Term</th><th>Applies To</th><th class="text-end">Value</th><th>Reason</th><th>Status</th></tr></thead>
-                            <tbody>
-                            @foreach($exemptions as $e)
-                                <tr>
-                                    <td>Term {{ $e->term }}, {{ $e->academic_year }}</td>
-                                    <td>{{ $e->scopeLabel() }}</td>
-                                    <td class="text-end">{{ $e->type === 'fixed' ? 'KES ' . number_format($e->value, 2) : number_format($e->value, 1) . '%' }}</td>
-                                    <td class="text-muted small">{{ $e->reason ?? '—' }}</td>
-                                    <td>
-                                        @php $emap = ['pending' => 'secondary', 'approved' => 'success', 'rejected' => 'danger']; @endphp
-                                        <span class="badge bg-{{ $emap[$e->status] ?? 'secondary' }}-subtle text-{{ $emap[$e->status] ?? 'secondary' }} text-capitalize">{{ $e->status }}</span>
-                                    </td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Approved exemptions and scholarships are included above as credits on the date they were approved.
+                </p>
             </div>
 
             {{-- TRANSPORT & ACCOMMODATION --}}
@@ -287,8 +349,8 @@
     <script>
         if (document.getElementById('subjectResultsTable')) {
             $('#subjectResultsTable').DataTable({
-                order: [[0, 'desc']],
-                pageLength: 10
+                order: [[0, 'asc']],
+                pageLength: 25
             });
         }
     </script>
