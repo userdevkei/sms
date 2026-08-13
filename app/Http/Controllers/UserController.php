@@ -575,6 +575,6 @@ class UserController extends Controller
 
     public function template()
     {
-        return response()->download(base_path('Files/template/Template.xlsx'));
+        return response()->download(base_path('Files/template/StudentTemplate.xlsx'));
     }
 }
