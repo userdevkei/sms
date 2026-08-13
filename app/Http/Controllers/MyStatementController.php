@@ -26,11 +26,6 @@ class MyStatementController extends Controller
             ->get()
             ->keyBy('id');
 
-        $exemptions = Exemption::where('user_id', $user->id)
-            ->where('status', 'approved')
-            ->with('votehead')
-            ->get();
-
         $entries = collect();
 
         foreach ($invoices as $invoice) {
@@ -59,27 +54,6 @@ class MyStatementController extends Controller
             ]);
         }
 
-        foreach ($exemptions as $exemption) {
-            // Fixed exemptions carry their own KES value directly. Percentage
-            // exemptions need resolving against whatever they apply to — swap
-            // in the real method/relationship once confirmed against your
-            // Exemption model; left at 0 rather than guessing a wrong figure.
-            $amount = $exemption->type === 'fixed'
-                ? (float) $exemption->value
-                : (float) ($exemption->resolvedAmount ?? 0);
-
-            $entries->push([
-                'date'        => $exemption->created_at->toDateString(),
-                'sort_key'    => $exemption->created_at->timestamp . '_exm',
-                'type'        => 'exemption',
-                'label'       => 'Exemption — ' . ($exemption->votehead->name ?? 'General'),
-                'description' => $exemption->reason ?? 'Approved exemption/scholarship',
-                'debit'       => null,
-                'credit'      => $amount,
-                'invoice'     => null,
-            ]);
-        }
-
         $sorted = $entries->sortBy('sort_key')->values();
 
         $balance = 0;
@@ -92,7 +66,6 @@ class MyStatementController extends Controller
         $totals = [
             'total_charged'  => $invoices->sum('total_amount'),
             'total_paid'     => Payment::where('user_id', $user->id)->sum('amount'),
-            'total_exempted' => $exemptions->sum(fn ($e) => $e->type === 'fixed' ? $e->value : ($e->resolvedAmount ?? 0)),
             'balance'        => $balance,
         ];
 

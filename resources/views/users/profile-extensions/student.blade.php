@@ -39,9 +39,6 @@
     $payments = \App\Models\Payment::where('user_id', $user->id)
         ->with(['invoice', 'receivedBy'])->latest('paid_on')->get();
 
-    $exemptions = \App\Models\Exemption::where('user_id', $user->id)
-        ->with('votehead')->latest('created_at')->get();
-
     $routeStops = \App\Models\StudentRouteStop::where('user_id', $user->id)
         ->where('status', 'active')->with('routeStop.route')->latest('created_at')->get();
 
@@ -71,24 +68,6 @@
             'reference'   => $p->reference_number ?? '—',
             'debit'       => 0.0,
             'credit'      => (float) $p->amount,
-        ]);
-    }
-
-    foreach ($exemptions->where('status', 'approved') as $e) {
-        // Fixed exemptions carry their own KES value. Percentage exemptions
-        // need resolving against the invoice/votehead they apply to — swap
-        // in the real method once confirmed against the Exemption model
-        // (e.g. $e->resolvedAmount()); left as 0 rather than guessing wrong.
-        $amount = $e->type === 'fixed'
-            ? (float) $e->value
-            : (float) ($e->resolvedAmount ?? 0);
-
-        $statementLines->push([
-            'date'        => $e->created_at,
-            'description' => "Exemption — {$e->scopeLabel()}" . ($e->reason ? " ({$e->reason})" : ''),
-            'reference'   => '—',
-            'debit'       => 0.0,
-            'credit'      => $amount,
         ]);
     }
 

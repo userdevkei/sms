@@ -56,7 +56,7 @@
                         <div class="d-flex justify-content-between align-items-start border-bottom py-2">
                             <div>
                                 <div class="fw-semibold">KES {{ number_format($payment->amount, 2) }} <span class="badge bg-light text-muted text-capitalize">{{ $payment->method }}</span></div>
-                                <div class="text-muted small">{{ $payment->payment_number }} . {{ $payment->paid_on->format('d M Y') }} . by {{ $payment->receivedBy->full_name }}</div>
+                                <div class="text-muted small">{{ $payment->payment_number }} . {{ $payment->paid_on->format('d M Y') }} . by {{ $payment->receivedBy?->full_name }}</div>
                                 @if($payment->reference_number)<div class="text-muted small">Ref: {{ $payment->reference_number }}</div>@endif
                             </div>
                             @can('payments.manage')
