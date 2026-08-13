@@ -17,7 +17,7 @@
             <form method="GET" class="row g-2 align-items-end">
                 <div class="col-6 col-md-4">
                     <label class="form-label small text-muted mb-1">Grade Level</label>
-                    <select name="grade_level" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <select name="grade_level" class="form-select form-select-sm select2" onchange="this.form.submit()">
                         <option value="">All Grade Levels</option>
                         @foreach($gradeLevels as $grade)
                             <option value="{{ $grade->id }}" @selected(request('grade_level') === $grade->id)>{{ $grade->name }}</option>
@@ -34,7 +34,7 @@
                 <table class="table table-hover align-middle mb-0 w-100" id="feeStructuresTable">
                     <thead><tr><th>#</th><th>Grade Level</th><th>Version</th><th>Total</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
                     <tbody>
-                    @forelse($feeStructures as $fs)
+                    @foreach($feeStructures as $fs)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td class="fw-semibold">{{ $fs->gradeLevel->name }}</td>
@@ -48,9 +48,7 @@
                                 <a href="{{ route('finance.fee-structures.show', $fs->id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
                             </td>
                         </tr>
-                    @empty
-                        <tr><td colspan="5" class="text-center text-muted py-3">No fee structures found.</td></tr>
-                    @endforelse
+                    @endforeach
                     </tbody>
                 </table>
             </div>
@@ -68,10 +66,16 @@
     <script>
         $(function () {
             $('#feeStructuresTable').DataTable({
-                order: [[0, 'asc'], [1, 'desc']], // Grade Level asc, then newest version first
+                order: [[1, 'asc'], [2, 'desc']], // Grade Level asc, then newest version first
                 columnDefs: [
-                    { orderable: false, targets: [4] }, // Actions column
+                    { orderable: false, targets: [5] }, // Actions column
+                    { className: 'text-end', targets: [5] },
                 ],
+                language: {
+                    search: '',
+                    searchPlaceholder: 'Search fee structures...',
+                    emptyTable: 'No fee structures found.',
+                },
                 pageLength: 25,
                 lengthMenu: [10, 25, 50, 100],
             });

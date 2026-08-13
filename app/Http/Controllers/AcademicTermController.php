@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicTerm;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
+use Illuminate\Support\Facades\Validator;
 
 class AcademicTermController extends Controller
 {

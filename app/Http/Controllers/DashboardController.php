@@ -75,7 +75,9 @@ class DashboardController extends Controller
         return AcademicTerm::whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->first()
-            ?? AcademicTerm::orderByDesc('start_date')->first();
+            ?? AcademicTerm::whereDate('start_date', '<=', now())
+                ->orderByDesc('start_date')
+                ->first();
     }
 
     protected function activeStudentIds()

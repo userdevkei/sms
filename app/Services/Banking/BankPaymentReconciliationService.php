@@ -5,6 +5,7 @@ use App\DataTransferObjects\BankTransactionData;
 use App\Models\BankTransaction;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class BankPaymentReconciliationService
@@ -45,23 +46,11 @@ class BankPaymentReconciliationService
             return;
         }
 
-        // Assumes you instruct parents to use the student's admission_number
-        // as the account reference — same convention as your M-Pesa paybill.
-        $invoice = Invoice::whereHas('student', function ($q) use ($txn) {
-            $q->where('userID', trim($txn->account_reference));
-        })
-            ->where('balance', '>', 0)
-            ->orderBy('created_at')
-            ->first();
-
-        if (!$invoice) {
-            return; // stays unmatched, goes to review queue
-        }
+        $student = User::where('userID', trim($txn->account_reference))->first();
 
         $payment = Payment::create([
             'payment_number' => $this->generatePaymentNumber(),
-            'invoice_id' => $invoice->id,
-            'user_id' => $invoice->user_id,
+            'user_id' => $student->user_id,
             'method' => 'bank',
             'gateway' => $txn->bank,
             'gateway_transaction_id' => $txn->transaction_ref,
