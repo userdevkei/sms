@@ -166,7 +166,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table {{--id="smsGatewaysTable"--}} class="table table-hover align-middle w-100">
+                        <table {{--id="smsGatewaysTable"--}} class="table table-hover table-sm table-striped fs-sm w-100">
                             <thead><tr><th>Name</th><th>Provider</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
                             <tbody>
                             @forelse($smsGateways as $gw)
@@ -272,7 +272,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table {{--id="emailGatewaysTable" --}}class="table table-hover align-middle w-100">
+                        <table {{--id="emailGatewaysTable" --}}class="table table-hover table-sm table-striped fs-sm w-100">
                             <thead><tr><th>Name</th><th>Host</th><th>From Address</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
                             <tbody>
                             @forelse($emailGateways as $gw)

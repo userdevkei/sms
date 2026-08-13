@@ -36,7 +36,7 @@
                 <div class="text-center py-5 text-muted">No assessments found - or you have no subject assignments yet.</div>
             @else
                 <div class="table-responsive">
-                    <table id="roundsTable" class="table table-hover align-middle w-100 table-striped">
+                    <table id="roundsTable" class="table table-hover table-sm table-striped fs-sm w-100">
                         <thead>
                         <tr>
                             <th>#</th>

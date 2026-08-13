@@ -33,7 +33,7 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover table-sm table-striped fs-sm w-100">
                     <thead><tr><th>Class</th><th>Grade Level</th><th>Pathway</th><th>Class Teacher</th><th>Capacity</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
                     <tbody>
                     @forelse($streams as $stream)

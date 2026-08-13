@@ -34,7 +34,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover table-sm table-striped fs-sm w-100">
                         <thead><tr><th>Student</th><th>Admission No.</th><th style="width:280px;">Pathway <span class="text-danger">*</span></th></tr></thead>
                         <tbody>
                         @forelse($eligible as $enrollment)

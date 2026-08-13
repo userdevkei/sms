@@ -13,7 +13,7 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
-                <table id="roundTable" class="table table-hover align-middle w-100 table-striped">
+                <table id="roundTable" class="table table-hover table-sm table-striped fs-sm w-100">
                     <thead>
                     <tr>
                         <th>#</th><th>Subject</th><th>Class</th><th>Type</th><th>Max Score</th><th>Status</th><th>Finalized</th><th class="text-end">Actions</th>

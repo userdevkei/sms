@@ -17,7 +17,7 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover table-sm table-striped fs-sm w-100">
                     <thead><tr><th>Name</th><th>Code</th><th>Subjects</th><th>Streams</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
                     <tbody>
                     @forelse($pathways as $pathway)

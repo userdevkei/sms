@@ -24,7 +24,7 @@
             </div>
 
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover table-sm table-striped fs-sm w-100">
                     <thead><tr><th>#</th><th>Room</th><th>Capacity</th><th>Occupied</th><th>Available</th><th>Fee / Term</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
                     <tbody>
                     @forelse($hostel->rooms as $room)

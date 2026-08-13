@@ -44,7 +44,7 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
-                <table id="assignmentsTable" class="table table-hover align-middle w-100">
+                <table id="assignmentsTable" class="table table-hover table-sm table-striped fs-sm w-100">
                     <thead>
                     <tr>
                         <th>#</th>

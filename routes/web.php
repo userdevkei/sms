@@ -312,6 +312,7 @@ Route::middleware('auth')->group(function () {
         Route::post('progression/{grade_level}/exceptions', [ProgressionExceptionController::class, 'store'])->name('progression.exceptions.store');
         Route::post('academic-terms', [AcademicTermController::class, 'store'])->name('academic-terms.store');
         Route::delete('academic-terms/{academic_term}', [AcademicTermController::class, 'destroy'])->name('academic-terms.destroy');
+        Route::put('academic-terms/{academicTerm}', [AcademicTermController::class, 'update'])->name('academic-terms.update');
     });
 
     Route::prefix('curriculum')->name('curriculum.')->middleware(['auth', 'can:progression.view'])->group(function () {
