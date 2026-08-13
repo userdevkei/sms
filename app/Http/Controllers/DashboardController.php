@@ -83,6 +83,24 @@ class DashboardController extends Controller
         return StudentEnrollment::where('status', 'active')->pluck('user_id')->unique();
     }
 
+    /**
+     * Payments recorded within a term's calendar window.
+     *
+     * Payments are NOT pegged to an invoice or a term — a student can pay
+     * against their account at any time, for any reason. "Collected this
+     * term" is therefore an approximation based on WHEN the cash came in
+     * (payments.paid_on falling inside the term's start/end dates), not
+     * which invoice or term it was meant to settle. This is the standard
+     * way to read cash collection when payments aren't earmarked.
+     */
+    protected function paymentsForTerm(AcademicTerm $term)
+    {
+        return Payment::whereBetween('paid_on', [
+            $term->start_date->format('Y-m-d'),
+            $term->end_date->format('Y-m-d'),
+        ]);
+    }
+
     /* =========================================================
      |  BALANCE HELPERS
      |
@@ -186,8 +204,7 @@ class DashboardController extends Controller
         $balances = $this->schoolWideBalances($activeIds);
 
         $collectedThisTerm = $term
-            ? Payment::whereHas('invoice', fn ($q) => $q->where('academic_year', $term->academic_year)
-                ->where('term', $term->term_number))->sum('amount')
+            ? $this->paymentsForTerm($term)->sum('amount')
             : Payment::whereMonth('paid_on', now()->month)->sum('amount');
 
         $genderSplit = User::whereIn('id', $activeIds)
@@ -210,8 +227,7 @@ class DashboardController extends Controller
         $collectionsTrend = AcademicTerm::orderByDesc('start_date')->limit(6)->get()->reverse()
             ->mapWithKeys(function ($t) {
                 $label = "{$t->academic_year} T{$t->term_number}";
-                $total = Payment::whereHas('invoice', fn ($q) => $q->where('academic_year', $t->academic_year)
-                    ->where('term', $t->term_number))->sum('amount');
+                $total = $this->paymentsForTerm($t)->sum('amount');
                 return [$label => (float) $total];
             });
 
@@ -246,7 +262,7 @@ class DashboardController extends Controller
             : Invoice::sum('total_amount');
 
         $collectedThisTerm = $term
-            ? Payment::whereHas('invoice', fn ($q) => $q->where('academic_year', $term->academic_year)->where('term', $term->term_number))->sum('amount')
+            ? $this->paymentsForTerm($term)->sum('amount')
             : Payment::sum('amount');
 
         $balances       = $this->schoolWideBalances();
@@ -261,7 +277,7 @@ class DashboardController extends Controller
         $collectionsTrend = AcademicTerm::orderByDesc('start_date')->limit(6)->get()->reverse()
             ->mapWithKeys(function ($t) {
                 $label = "{$t->academic_year} T{$t->term_number}";
-                return [$label => (float) Payment::whereHas('invoice', fn ($q) => $q->where('academic_year', $t->academic_year)->where('term', $t->term_number))->sum('amount')];
+                return [$label => (float) $this->paymentsForTerm($t)->sum('amount')];
             });
 
         $byGrade = $this->balancesByGrade();
@@ -489,7 +505,6 @@ class DashboardController extends Controller
             ],
         ];
     }
-
     public function settings()
     {
         $settings = Setting::pluck('value', 'key'); // unchanged
