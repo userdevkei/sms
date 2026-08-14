@@ -13,11 +13,12 @@ class CurriculumSeeder extends Seeder
     public function run(): void
     {
         $levels = [
-            ['name' => 'Pre-Primary',       'code' => 'PP', 'sequence' => 1],
-            ['name' => 'Lower Primary',     'code' => 'LP', 'sequence' => 2],
-            ['name' => 'Upper Primary',     'code' => 'UP', 'sequence' => 3],
-            ['name' => 'Junior Secondary',  'code' => 'JS', 'sequence' => 4],
-            ['name' => 'Senior Secondary',  'code' => 'SS', 'sequence' => 5],
+            ['name' => 'Kindergarten',      'code' => 'KG', 'sequence' => 1],
+            ['name' => 'Pre-Primary',       'code' => 'PP', 'sequence' => 2],
+            ['name' => 'Lower Primary',     'code' => 'LP', 'sequence' => 3],
+            ['name' => 'Upper Primary',     'code' => 'UP', 'sequence' => 4],
+            ['name' => 'Junior Secondary',  'code' => 'JS', 'sequence' => 5],
+            ['name' => 'Senior Secondary',  'code' => 'SS', 'sequence' => 6],
         ];
 
         $levelModels = [];
@@ -29,20 +30,23 @@ class CurriculumSeeder extends Seeder
         }
 
         $grades = [
-            ['name' => 'PP1',     'code' => 'PP1',  'level' => 'PP', 'sequence' => 1],
-            ['name' => 'PP2',     'code' => 'PP2',  'level' => 'PP', 'sequence' => 2],
-            ['name' => 'Grade 1', 'code' => 'G1',   'level' => 'LP', 'sequence' => 3],
-            ['name' => 'Grade 2', 'code' => 'G2',   'level' => 'LP', 'sequence' => 4],
-            ['name' => 'Grade 3', 'code' => 'G3',   'level' => 'LP', 'sequence' => 5],
-            ['name' => 'Grade 4', 'code' => 'G4',   'level' => 'UP', 'sequence' => 6],
-            ['name' => 'Grade 5', 'code' => 'G5',   'level' => 'UP', 'sequence' => 7],
-            ['name' => 'Grade 6', 'code' => 'G6',   'level' => 'UP', 'sequence' => 8],
-            ['name' => 'Grade 7', 'code' => 'G7',   'level' => 'JS', 'sequence' => 9],
-            ['name' => 'Grade 8', 'code' => 'G8',   'level' => 'JS', 'sequence' => 10],
-            ['name' => 'Grade 9', 'code' => 'G9',   'level' => 'JS', 'sequence' => 11],
-            ['name' => 'Grade 10', 'code' => 'G10', 'level' => 'SS', 'sequence' => 12],
-            ['name' => 'Grade 11', 'code' => 'G11', 'level' => 'SS', 'sequence' => 13],
-            ['name' => 'Grade 12', 'code' => 'G12', 'level' => 'SS', 'sequence' => 14],
+            ['name' => 'KG1',     'code' => 'KG1',  'level' => 'KG', 'sequence' => 1],
+            ['name' => 'KG2',     'code' => 'KG2',  'level' => 'KG', 'sequence' => 2],
+            ['name' => 'KG3',     'code' => 'KG3',  'level' => 'KG', 'sequence' => 3],
+            ['name' => 'PP1',     'code' => 'PP1',  'level' => 'PP', 'sequence' => 4],
+            ['name' => 'PP2',     'code' => 'PP2',  'level' => 'PP', 'sequence' => 5],
+            ['name' => 'Grade 1', 'code' => 'G1',   'level' => 'LP', 'sequence' => 6],
+            ['name' => 'Grade 2', 'code' => 'G2',   'level' => 'LP', 'sequence' => 7],
+            ['name' => 'Grade 3', 'code' => 'G3',   'level' => 'LP', 'sequence' => 8],
+            ['name' => 'Grade 4', 'code' => 'G4',   'level' => 'UP', 'sequence' => 9],
+            ['name' => 'Grade 5', 'code' => 'G5',   'level' => 'UP', 'sequence' => 10],
+            ['name' => 'Grade 6', 'code' => 'G6',   'level' => 'UP', 'sequence' => 11],
+            ['name' => 'Grade 7', 'code' => 'G7',   'level' => 'JS', 'sequence' => 12],
+            ['name' => 'Grade 8', 'code' => 'G8',   'level' => 'JS', 'sequence' => 13],
+            ['name' => 'Grade 9', 'code' => 'G9',   'level' => 'JS', 'sequence' => 14],
+            ['name' => 'Grade 10', 'code' => 'G10', 'level' => 'SS', 'sequence' => 15],
+            ['name' => 'Grade 11', 'code' => 'G11', 'level' => 'SS', 'sequence' => 16],
+            ['name' => 'Grade 12', 'code' => 'G12', 'level' => 'SS', 'sequence' => 17],
         ];
 
         foreach ($grades as $grade) {

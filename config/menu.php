@@ -18,7 +18,7 @@ return [
         ['label' => 'Education Levels', 'route' => 'curriculum.education-levels.index', 'permission' => 'curriculum.view'],
         ['label' => 'Grade Levels', 'route' => 'curriculum.grade-levels.index', 'permission' => 'curriculum.view'],
         ['label' => 'Learning Areas', 'route' => 'curriculum.learning-areas.index', 'permission' => 'curriculum.view'],
-        ['label' => 'Pathways (Senior Secondary)', 'route' => 'curriculum.pathways.index', 'permission' => 'curriculum.view'],
+        ['label' => 'Pathways', 'route' => 'curriculum.pathways.index', 'permission' => 'curriculum.view'],
         ['label' => 'Streams / Classes', 'route' => 'curriculum.streams.index', 'permission' => 'curriculum.view'],
     ]],
 
@@ -39,7 +39,7 @@ return [
 
     ['label' => 'Results', 'icon' => 'bi-journal-text', 'permission' => 'results.view', 'children' => [
         ['label' => 'Assessments', 'route' => 'results.assessments.index', 'permission' => 'results.view'],
-        ['label' => 'Subject Teacher Assignments', 'route' => 'results.assignments.index', 'permission' => 'results.view'],
+        ['label' => 'Subject Allocation', 'route' => 'results.assignments.index', 'permission' => 'results.view'],
         ['label' => 'Assessment Types', 'route' => 'results.assessment-types.index', 'permission' => 'results.view'],
         ['label' => 'Report Cards', 'route' => 'results.report-cards.index', 'permission' => 'results.view'],
         ['label' => 'Grading Bands', 'route' => 'results.grading-bands.index', 'permission' => 'curriculum.view'],

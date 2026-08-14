@@ -1,8 +1,8 @@
 <?php
-
 namespace App\Services\Banking\Handlers;
 
 use App\DataTransferObjects\BankTransactionData;
+use App\Models\Gateway;
 use App\Services\Banking\Contracts\BankWebhookHandler;
 use Illuminate\Http\Request;
 
@@ -10,14 +10,23 @@ class EquityWebhookHandler implements BankWebhookHandler
 {
     public function verify(Request $request): bool
     {
-        return $request->getUser() === config('services.equity.ipn_user')
-            && $request->getPassword() === config('services.equity.ipn_password');
+        $gateway = Gateway::where('provider', 'equity')
+            ->where('is_active', true)
+            ->first();
+
+        if (!$gateway) {
+            return false;
+        }
+
+        $config = $gateway->config();
+
+        return hash_equals((string) ($config['ipn_username'] ?? ''), (string) $request->getUser())
+            && hash_equals((string) ($config['ipn_password'] ?? ''), (string) $request->getPassword());
     }
 
     public function shouldProcess(Request $request): bool
     {
-        // Equity sends IPN for both SUCCESS and FAILED — only FAILED ones
-        // still hit your endpoint for visibility, don't create a payment for them.
+        // Equity IPN fires for both SUCCESS and FAILED — only reconcile SUCCESS.
         return $request->json('transaction.status') === 'SUCCESS';
     }
 
@@ -29,7 +38,7 @@ class EquityWebhookHandler implements BankWebhookHandler
         return new BankTransactionData(
             bank: 'equity',
             transactionRef: $transaction['reference'],
-            accountReference: $transaction['billNumber'] ?? null,
+            accountReference: trim((string) ($transaction['billNumber'] ?? '')) ?: null,
             amount: (float) $transaction['amount'],
             payerName: $data['customer']['name'] ?? null,
             payerPhone: $data['customer']['mobileNumber'] ?? null,
@@ -38,7 +47,7 @@ class EquityWebhookHandler implements BankWebhookHandler
         );
     }
 
-    public function acknowledgement(): array
+    public function acknowledgement(Request $request): array
     {
         return ['status' => 'SUCCESS'];
     }

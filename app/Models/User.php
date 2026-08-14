@@ -58,11 +58,16 @@ class User extends Authenticatable
 
     public function hasPermission(string $permission): bool
     {
-        if ($this->hasRole('super_admin')) {
+        if ($this->hasRole('super_admin') && ! in_array($permission, $this->principalOnlyPermissionSlugs(), true)) {
             return true;
         }
 
         return $this->allPermissions()->contains($permission);
+    }
+
+     protected function principalOnlyPermissionSlugs(): array
+    {
+        return once(fn () => \App\Models\Permission::where('is_principle', true)->pluck('name')->all());
     }
 
 /*    public function hasAnyPermission(array $permissions): bool

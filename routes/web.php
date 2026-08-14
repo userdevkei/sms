@@ -334,7 +334,7 @@ Route::middleware('auth')->group(function () {
         Route::post('progression-exceptions/{exception}/reject', [ProgressionExceptionController::class, 'reject'])->name('progression.exceptions.reject');
     });
 
-    Route::prefix('results')->name('results.')->middleware(['auth', 'can:results.view', 'can:my-results.view'])->group(function () {
+    Route::prefix('results')->name('results.')->middleware(['auth', 'can:results.view'])->group(function () {
         Route::get('assessment-types', [AssessmentTypeController::class, 'index'])->name('assessment-types.index');
         Route::get('assignments', [SubjectTeacherAssignmentController::class, 'index'])->name('assignments.index');
 //        Route::get('assessments', [AssessmentController::class, 'index'])->name('assessments.index');
@@ -508,8 +508,6 @@ Route::middleware('auth')->group(function () {
         Route::post('invoices/preview', [InvoiceController::class, 'preview'])->name('invoices.preview');
         Route::post('invoices/store-confirmed', [InvoiceController::class, 'storeConfirmed'])->name('invoices.store-confirmed');
         Route::get('invoices-generate', [InvoiceController::class, 'generateForm'])->name('invoices.generate-form');
-        Route::post('invoices/generate-bulk', [InvoiceController::class, 'generateBulk'])->name('invoices.generate-bulk');
-        Route::post('invoices/generate-single', [InvoiceController::class, 'generateSingle'])->name('invoices.generate-single');
     });
 
     Route::prefix('finance')->name('finance.')->middleware(['auth', 'can:payments.view'])->group(function () {

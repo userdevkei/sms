@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class BankPaymentReconciliationService
 {
@@ -40,6 +41,33 @@ class BankPaymentReconciliationService
         });
     }
 
+    /*protected function attemptAutoMatch(BankTransaction $txn): void
+    {
+        if (!$txn->account_reference) {
+            return;
+        }
+
+        $student = User::where('userID', trim($txn->account_reference))->first();
+
+        $payment = Payment::create([
+            'payment_number' => $this->generatePaymentNumber(),
+            'user_id' => $student->user_id,
+            'method' => 'bank',
+            'gateway' => $txn->bank,
+            'gateway_transaction_id' => $txn->transaction_ref,
+            'amount' => $txn->amount,
+            'reference_number' => $txn->transaction_ref,
+            'paid_on' => $txn->paid_at->toDateString(),
+            'notes' => "Auto-matched via {$txn->bank} IPN",
+        ]);
+
+        $txn->update([
+            'status' => 'matched',
+            'matched_payment_id' => $payment->id,
+            'matched_at' => now(),
+        ]);
+    }*/
+
     protected function attemptAutoMatch(BankTransaction $txn): void
     {
         if (!$txn->account_reference) {
@@ -47,6 +75,15 @@ class BankPaymentReconciliationService
         }
 
         $student = User::where('userID', trim($txn->account_reference))->first();
+
+        if (!$student) {
+            Log::warning('Bank IPN could not auto-match student', [
+                'bank' => $txn->bank,
+                'transaction_ref' => $txn->transaction_ref,
+                'account_reference' => $txn->account_reference,
+            ]);
+            return; // stays 'unmatched' for manual reconciliation in admin UI
+        }
 
         $payment = Payment::create([
             'payment_number' => $this->generatePaymentNumber(),
