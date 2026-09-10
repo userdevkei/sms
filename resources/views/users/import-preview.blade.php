@@ -36,6 +36,9 @@
                             <th>County</th>
                             <th>Sub County</th>
                             <th>Ward</th>
+                            <th>Grade</th>
+                            <th>Stream</th>
+                            <th>Balance</th>
                             <th>Issues</th>
                         </tr>
                         </thead>
@@ -58,6 +61,16 @@
                                 <td>{{ $entry['data']['county'] ?? '—' }}</td>
                                 <td>{{ $entry['data']['sub_county'] ?? '—' }}</td>
                                 <td>{{ $entry['data']['ward'] ?? '—' }}</td>
+                                <td>{{ $entry['data']['grade'] ?: '—' }}</td>
+                                <td>
+                                    {{ $entry['data']['stream'] ?: '—' }}
+                                    @if($entry['stream_will_be_created'])
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle">will create</span>
+                                    @endif
+                                </td>
+                                <td class="{{ ($entry['balance'] ?? 0) < 0 ? 'text-success' : (($entry['balance'] ?? 0) > 0 ? 'text-danger' : '') }}">
+                                    {{ $entry['balance'] !== null ? number_format($entry['balance'], 2) : '—' }}
+                                </td>
                                 <td>
                                     @foreach($entry['errors'] as $error)
                                         <div class="small text-danger">{{ $error }}</div>
@@ -71,10 +84,10 @@
             </div>
 
             <div class="card-footer bg-white border-0 d-flex justify-content-between">
-                <a href="{{ route('users.import.create') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('users.import.create') }}" class="btn btn-sm btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i> Upload a different file
                 </a>
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-sm btn-primary">
                     <i class="bi bi-check2-circle me-1"></i> Import Selected
                 </button>
             </div>

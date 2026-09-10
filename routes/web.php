@@ -5,7 +5,44 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Http\Request;
 
-use App\Http\Controllers\{AdminPaymentController, VehicleController, UserController, TransportRouteController, TermSubjectResultController, TermResultCompletionController, SubjectTeacherAssignmentController, StudentController, StreamController, RouteAssignmentController, RoomReservationController, RoomController, RoomAllocationController, RoleController, ReportCardPdfController, ReportCardController, ProgressionExceptionController, ProgressionController, PermissionController, PathwayController, PathwayClassificationController, MarksEntryController, LearningAreaController, HostelController, GradingBandController, GradeLevelController, EnrollmentController, EducationLevelController, DriverController, DashboardController, AssessmentTypeController, AssessmentController, AcademicTermController,
+use App\Http\Controllers\{AccountingReportController,
+    AdminPaymentController,
+    ExpenseCategoryController,
+    ExpenseTransactionController,
+    IncomeCategoryController,
+    IncomeTransactionController,
+    VehicleController,
+    UserController,
+    TransportRouteController,
+    TermSubjectResultController,
+    TermResultCompletionController,
+    SubjectTeacherAssignmentController,
+    StudentController,
+    StreamController,
+    RouteAssignmentController,
+    RoomReservationController,
+    RoomController,
+    RoomAllocationController,
+    RoleController,
+    ReportCardPdfController,
+    ReportCardController,
+    ProgressionExceptionController,
+    ProgressionController,
+    PermissionController,
+    PathwayController,
+    PathwayClassificationController,
+    MarksEntryController,
+    LearningAreaController,
+    HostelController,
+    GradingBandController,
+    GradeLevelController,
+    EnrollmentController,
+    EducationLevelController,
+    DriverController,
+    DashboardController,
+    AssessmentTypeController,
+    AssessmentController,
+    AcademicTermController,
     BankWebhookController,
     ChangePasswordController,
     EmailGatewayController,
@@ -24,7 +61,7 @@ use App\Http\Controllers\{AdminPaymentController, VehicleController, UserControl
     ExemptionController,
     InvoiceController,
     PaymentController,
-    StudentStatementController,};
+    StudentStatementController};
 
 Route::prefix('finance')->name('finance.')->middleware(['auth', 'can:fee_structures.view'])->group(function () {
     Route::get('voteheads', [VoteheadController::class, 'index'])->name('voteheads.index');
@@ -546,9 +583,59 @@ Route::middleware('auth')->group(function () {
     Route::get('my-payments', [MyPaymentsController::class, 'index'])->name('finance.my-payments');
     Route::post('my-payments/initiate', [MyPaymentsController::class, 'initiate'])->name('finance.my-payments.initiate');
     Route::post('my-payments/retry/{transaction}', [MyPaymentsController::class, 'retry'])->name('finance.my-payments.retry');
-    Route::get('my-payments/status/{transaction}', [MyPaymentsController::class, 'status'])->name('finance.my-payments.status');
+    Route::get('finance/my-payments/status/{transaction}', [MyPaymentsController::class, 'status'])->name('finance.my-payments.status');
 
-    // routes/web.php or api.php
+    Route::prefix('accounting')->name('accounting.')->middleware(['auth'])->group(function () {
+
+        Route::get('/', [AccountingReportController::class, 'index'])->name('index');
+        // Income categories
+        Route::middleware('auth')->group(function () {
+            Route::resource('income-categories', IncomeCategoryController::class)->except('show');
+        });
+
+        // Expense categories
+        Route::name('expense-categories.')->group(function () {
+            Route::get('expense-categories', [ExpenseCategoryController::class, 'index'])->name('index');
+            Route::get('create-expense-categories-create', [ExpenseCategoryController::class, 'create'])->name('create');
+            Route::get('{expense_category}/edit-expense-category', [ExpenseCategoryController::class, 'edit'])->name('edit');
+            Route::put('{expense_category}/update-expense-category', [ExpenseCategoryController::class, 'update'])->name('update');
+            Route::delete('{expense_category}/destroy-expense-category', [ExpenseCategoryController::class, 'destroy'])->name('destroy');
+            Route::post('create-expense-category', [ExpenseCategoryController::class, 'store'])->name('store');
+        });
+        // Income transactions
+        Route::name('income.')->group(function () {
+            Route::get('incomes', [IncomeTransactionController::class, 'index'])->name('index');
+            Route::get('create-income', [IncomeTransactionController::class, 'create'])->name('create');
+            Route::get('{incomeTransaction}/edit-income', [IncomeTransactionController::class, 'edit'])->name('edit');
+            Route::put('{incomeTransaction}/update-income', [IncomeTransactionController::class, 'update'])->name('update');
+            Route::post('store-income', [IncomeTransactionController::class, 'store'])->name('store');
+            Route::get('income-data', [IncomeTransactionController::class, 'data'])->name('data');
+            Route::delete('{incomeTransaction}/destroy-income', [IncomeTransactionController::class, 'destroy'])->name('destroy');
+            Route::get('{incomeTransaction}/receipt', [IncomeTransactionController::class, 'receipt'])->name('receipt');
+            Route::get('export-incomes', [IncomeTransactionController::class, 'export'])->name('export');
+
+        });
+
+        // Expense transactions
+        Route::name('expense.')->group(function () {
+            Route::get('expenses', [ExpenseTransactionController::class, 'index'])->name('index');
+            Route::get('create-expenses', [ExpenseTransactionController::class, 'create'])->name('create');
+            Route::get('{expenseTransaction}/edit-expense', [ExpenseTransactionController::class, 'edit'])->name('edit');
+            Route::put('{expenseTransaction}/update-expense', [ExpenseTransactionController::class, 'update'])->name('update');
+            Route::post('store-expenses', [ExpenseTransactionController::class, 'store'])->name('store');
+            Route::get('expenses-data', [ExpenseTransactionController::class, 'data'])->name('data');
+            Route::delete('{expenseTransaction}/destroy-expense', [ExpenseTransactionController::class, 'destroy'])->name('destroy');
+            Route::get('{expenseTransaction}/voucher', [ExpenseTransactionController::class, 'receipt'])->name('receipt');
+            Route::get('export-expenses', [ExpenseTransactionController::class, 'export'])->name('export');
+
+        });
+
+        // Reports
+        Route::middleware('auth')->group(function () {
+            Route::get('reports/summary', [AccountingReportController::class, 'summary'])->name('reports.summary');
+            Route::get('reports/export', [AccountingReportController::class, 'export'])->name('reports.export');
+        });
+    });
 });
 
 Route::post('/mpesa/callback', [MyPaymentsController::class, 'handle'])->name('mpesa.callback')->withoutMiddleware(['auth', 'verified']); // adjust to whatever middleware wraps your web routes

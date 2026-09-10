@@ -24,7 +24,7 @@
                             <input type="file" name="file" class="form-control" accept=".csv,.xlsx,.xls" required>
                             @error('file')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                         </div>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-sm btn-primary">
                             <i class="bi bi-upload me-1"></i> Preview Import
                         </button>
                     </form>

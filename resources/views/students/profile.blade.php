@@ -11,14 +11,14 @@
 
         <div class="profile-topbar">
             <div>
-                <p class="profile-eyebrow mb-1">Users / Directory</p>
+                <p class="profile-eyebrow mb-1">Students / Directory</p>
                 <h1 class="profile-title">{{ $user->first_name }} {{ $user->last_name }}</h1>
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('users.index') }}" class="btn btn-kv-ghost">
-                    <i class="bi bi-arrow-left"></i> Back to Users
+                <a href="{{ route('students.index') }}" class="btn btn-kv-ghost">
+                    <i class="bi bi-arrow-left"></i> Back to Students
                 </a>
-                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-kv-solid">
+                <a href="{{ route('students.edit', $user->id) }}" class="btn btn-kv-solid">
                     <i class="bi bi-pencil-square"></i> Edit
                 </a>
             </div>

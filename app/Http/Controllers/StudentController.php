@@ -6,11 +6,15 @@ use App\Http\Requests\StoreStudentRequest;
 use App\Http\Requests\UpdateStudentRequest;
 use App\Imports\UsersImport;
 use App\Models\GradeLevel;
+use App\Models\Invoice;
+use App\Models\Pathway;
 use App\Models\Role;
 use App\Models\RoleUser;
+use App\Models\Setting;
 use App\Models\Stream;
 use App\Models\StudentEnrollment;
 use App\Models\User;
+use App\Services\Common;
 use App\Services\Common\FileUploadService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -231,6 +235,20 @@ class StudentController extends Controller
         $seenUserIds = [];
         $preview = [];
 
+        // Loaded once per request — name => [id, sequence], case-insensitive.
+        $gradeLevels = GradeLevel::query()->get(['id', 'name', 'sequence', 'code'])
+            ->mapWithKeys(fn ($g) => [mb_strtolower(trim($g->code)) => ['id' => $g->id, 'sequence' => $g->sequence]]);
+
+        // Grade 10 and above (by sequence) require a pathway. Derived from the
+        // actual G10 row rather than hardcoded, so renumbering doesn't silently break this.
+        $pathwayThresholdSequence = GradeLevel::query()->where('code', 'G10')->value('sequence');
+
+        $pathways = Pathway::query()->pluck('id', 'code')
+            ->mapWithKeys(fn ($id, $code) => [mb_strtolower(trim($code)) => $id]);
+
+        $existingStreams = Stream::query()->get(['id', 'grade_level_id', 'name'])
+            ->mapWithKeys(fn ($s) => [$s->grade_level_id.'|'.mb_strtolower(trim($s->name)) => $s->id]);
+
         foreach ($rows as $index => $row) {
             $data = [
                 'first_name'  => trim((string) ($row['first_name'] ?? '')),
@@ -243,6 +261,10 @@ class StudentController extends Controller
                 'county'      => trim((string) ($row['county'] ?? '')),
                 'sub_county'  => trim((string) ($row['sub_county'] ?? '')),
                 'ward'        => trim((string) ($row['ward'] ?? '')),
+                'grade'       => trim((string) ($row['grade'] ?? '')),
+                'stream'      => trim((string) ($row['stream'] ?? '')),
+                'pathway'     => trim((string) ($row['pathway'] ?? '')),
+                'balance'     => trim((string) ($row['balance'] ?? '')),
             ];
 
             $errors = [];
@@ -250,12 +272,10 @@ class StudentController extends Controller
             if ($data['first_name'] === '') $errors[] = 'First name is required';
             if ($data['last_name'] === '') $errors[] = 'Last name is required';
 
-            // User ID is mandatory for students — no fallback path, unlike
-            // general Users where it was historically optional.
             if ($data['user_id'] === '') {
                 $errors[] = 'Admission Number (User ID) is required';
             } elseif (isset($seenUserIds[$data['user_id']])) {
-                $errors[] = 'Duplicate Admission Number within this file (row ' . $seenUserIds[$data['user_id']] . ')';
+                $errors[] = 'Duplicate Admission Number within this file (row '.$seenUserIds[$data['user_id']].')';
             } elseif (User::where('userID', $data['user_id'])->exists()) {
                 $errors[] = 'Admission Number already exists in the system';
             }
@@ -263,7 +283,7 @@ class StudentController extends Controller
             if ($data['email'] === '' || ! filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
                 $errors[] = 'A valid email is required';
             } elseif (isset($seenEmails[$data['email']])) {
-                $errors[] = 'Duplicate email within this file (row ' . $seenEmails[$data['email']] . ')';
+                $errors[] = 'Duplicate email within this file (row '.$seenEmails[$data['email']].')';
             } elseif (User::where('email', $data['email'])->exists()) {
                 $errors[] = 'Email already exists in the system';
             }
@@ -272,14 +292,74 @@ class StudentController extends Controller
                 $errors[] = 'Gender must be male or female';
             }
 
+            // Grade must match an existing GradeLevel by name — we never create grades on the fly.
+            $gradeLevelId = null;
+            $gradeSequence = null;
+            if ($data['grade'] === '') {
+                $errors[] = 'Grade is required';
+            } else {
+                $grade = $gradeLevels->get(mb_strtolower($data['grade']));
+                if (! $grade) {
+                    $errors[] = "Grade \"{$data['grade']}\" does not exist";
+                } else {
+                    $gradeLevelId = $grade['id'];
+                    $gradeSequence = $grade['sequence'];
+                }
+            }
+
+            $requiresPathway = $gradeSequence !== null && $gradeSequence >= $pathwayThresholdSequence;
+
+            // Pathway: only meaningful (and only required) from G10 up.
+            $pathwayId = null;
+            if ($requiresPathway) {
+                if ($data['pathway'] === '') {
+                    $errors[] = 'Pathway is required from Grade 10 upward';
+                } else {
+                    $pathwayId = $pathways->get(mb_strtolower($data['pathway']));
+                    if (! $pathwayId) {
+                        $errors[] = "Pathway \"{$data['pathway']}\" does not exist";
+                    }
+                }
+            }
+
+            // Stream is optional; if it doesn't exist under this grade yet, flag it for creation
+            // and reserve the key so repeated rows in the same file don't each claim "will create".
+            $streamWillBeCreated = false;
+            if ($data['stream'] !== '' && $gradeLevelId) {
+                $key = $gradeLevelId.'|'.mb_strtolower($data['stream']);
+                if (! $existingStreams->has($key)) {
+                    $streamWillBeCreated = true;
+                    $existingStreams->put($key, null);
+                }
+            }
+
+            // Balance is optional and signed: positive = owed, negative = overpayment/credit.
+            $balance = null;
+            if ($data['balance'] !== '') {
+                if (! is_numeric($data['balance'])) {
+                    $errors[] = 'Balance must be a number';
+                } else {
+                    $balance = round((float) $data['balance'], 2);
+                }
+            }
+
             if ($data['user_id'] !== '') $seenUserIds[$data['user_id']] = $index + 2;
             if ($data['email'] !== '') $seenEmails[$data['email']] = $index + 2;
 
-            $preview[] = ['row' => $index + 2, 'data' => $data, 'errors' => $errors, 'valid' => empty($errors)];
+            $preview[] = [
+                'row' => $index + 2,
+                'data' => $data,
+                'grade_level_id' => $gradeLevelId,
+                'pathway_id' => $pathwayId,
+                'stream_will_be_created' => $streamWillBeCreated,
+                'balance' => $balance,
+                'errors' => $errors,
+                'valid' => empty($errors),
+            ];
         }
 
         $token = (string) Str::uuid();
-        Cache::put('student-import:' . $token, $preview, now()->addMinutes(20));
+        Cache::put('student-import:'.$token, $preview, now()->addMinutes(20));
 
         return view('students.import-preview', [
             'token' => $token,
@@ -297,7 +377,7 @@ class StudentController extends Controller
             'selected.*' => 'integer',
         ]);
 
-        $preview = Cache::get('student-import:' . $request->input('token'));
+        $preview = Cache::get('student-import:'.$request->input('token'));
 
         if (! $preview) {
             return redirect()->route('students.import.create')
@@ -309,41 +389,124 @@ class StudentController extends Controller
         $skipped = 0;
         $studentRole = Role::query()->where('slug', 'student')->firstOrFail();
 
-        foreach ($preview as $i => $entry) {
-            if (! isset($selected[$i]) || ! $entry['valid']) {
-                $skipped++;
-                continue;
+
+
+        $academicYear = (new Common())->resolveCurrentTerm();
+
+        // Streams created earlier in *this* run get reused instead of raced into existing twice.
+        $createdStreams = [];
+
+        // Seed the Opening Balance sequence from what already exists this year.
+        // Not lock-protected — fine for one admin running one import; add
+        // lockForUpdate() if two imports could ever run concurrently.
+        $obSequence = Invoice::query()
+            ->where('invoice_number', 'like', "OB-{$academicYear->academic_year}-%")
+            ->count();
+
+        DB::transaction(function () use (
+            $preview, $selected, $studentRole, $academicYear,
+            &$createdStreams, &$obSequence, &$imported, &$skipped
+        ) {
+            foreach ($preview as $i => $entry) {
+                if (! isset($selected[$i]) || ! $entry['valid']) {
+                    $skipped++;
+                    continue;
+                }
+
+                $data = $entry['data'];
+
+                $exists = User::where('userID', $data['user_id'])
+                    ->orWhere('email', $data['email'])
+                    ->exists();
+
+                if ($exists) {
+                    $skipped++;
+                    continue;
+                }
+
+                $student = User::create([
+                    'first_name'   => $data['first_name'],
+                    'last_name'    => $data['last_name'],
+                    'middle_name'  => $data['middle_name'] ?: null,
+                    'userID'       => $data['user_id'],
+                    'email'        => $data['email'],
+                    'gender'       => $data['gender'],
+                    'phone_number' => $data['phone'] ?: null,
+                    'password'     => Hash::make($data['user_id']),
+                    'county'       => $data['county'],
+                    'sub_county'   => $data['sub_county'],
+                    'ward'         => $data['ward'],
+                    'status'       => 'active',
+                ]);
+
+                RoleUser::firstOrCreate(['user_id' => $student->id, 'role_id' => $studentRole->id]);
+
+                // --- Grade / Stream / Enrollment ---
+                $streamId = null;
+                if ($entry['grade_level_id'] && $data['stream'] !== '') {
+                    $streamKey = $entry['grade_level_id'].'|'.mb_strtolower($data['stream']);
+
+                    if (isset($createdStreams[$streamKey])) {
+                        $streamId = $createdStreams[$streamKey];
+                    } else {
+                        $stream = Stream::firstOrCreate(
+                            ['grade_level_id' => $entry['grade_level_id'], 'name' => $data['stream']],
+                            ['pathway_id' => $entry['pathway_id'] ?? null, 'class_teacher_id' => null]
+                        );
+                        $createdStreams[$streamKey] = $stream->id;
+                        $streamId = $stream->id;
+                    }
+                }
+
+                if ($entry['grade_level_id']) {
+                    StudentEnrollment::create([
+                        'user_id'        => $student->id,
+                        'grade_level_id' => $entry['grade_level_id'],
+                        'stream_id'      => $streamId,
+                        'academic_year'  => $academicYear->academic_year,
+                        'status'         => 'active',
+                        'enrolled_on'    => now(),
+                    ]);
+                }
+
+                // --- Opening balance as a manual adjustment invoice ---
+                if ($entry['balance'] !== null && $entry['balance'] != 0) {
+                    $balance = $entry['balance'];
+                    $isCredit = $balance < 0;
+
+                    $obSequence++;
+                    $invoiceNumber = sprintf('OB-%s-%04d', $academicYear->academic_year, $obSequence);
+
+
+                    // This is the JSON payload shape — kept as an array here since we're
+                    // writing straight to Eloquent rather than an HTTP call.
+                    $invoicePayload = [
+                        'invoice_number' => $invoiceNumber,
+                        'user_id'        => $student->id,
+                        'grade_level_id' => $entry['grade_level_id'],
+                        'academic_year'  => $academicYear->academic_year,
+                        'term'           => $academicYear->term_number,
+                        'total_amount'   => $balance,
+                        'amount_paid'    => 0,
+                        'balance'        => $balance,
+                        'status'         => $isCredit ? 'paid' : 'unpaid',
+                        'generated_by'   => auth()->id(),
+                        'items' => [[
+                            'description' => $isCredit ? 'Opening Balance (Credit)' : 'Opening Balance',
+                            'quantity'    => 1,
+                            'amount'      => $balance,
+                        ]],
+                    ];
+
+                    $invoice = Invoice::create(collect($invoicePayload)->except('items')->all());
+                    $invoice->items()->create($invoicePayload['items'][0]);
+                }
+
+                $imported++;
             }
+        });
 
-            $exists = User::where('userID', $entry['data']['user_id'])
-                ->orWhere('email', $entry['data']['email'])
-                ->exists();
-
-            if ($exists) {
-                $skipped++;
-                continue;
-            }
-
-            $student = User::create([
-                'first_name'   => $entry['data']['first_name'],
-                'last_name'    => $entry['data']['last_name'],
-                'middle_name'  => $entry['data']['middle_name'] ?: null,
-                'userID'       => $entry['data']['user_id'],
-                'email'        => $entry['data']['email'],
-                'gender'       => $entry['data']['gender'],
-                'phone_number' => $entry['data']['phone'] ?: null,
-                'password'     => Hash::make($entry['data']['user_id']),
-                'county'       => $entry['data']['county'],
-                'sub_county'   => $entry['data']['sub_county'],
-                'ward'         => $entry['data']['ward'],
-                'status'       => 'active',
-            ]);
-
-            RoleUser::firstOrCreate(['user_id' => $student->id, 'role_id' => $studentRole->id]);
-            $imported++;
-        }
-
-        Cache::forget('student-import:' . $request->input('token'));
+        Cache::forget('student-import:'.$request->input('token'));
 
         return redirect()->route('students.index')
             ->with('success', "Import complete: {$imported} student(s) created, {$skipped} skipped.");

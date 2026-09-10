@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\AcademicTerm;
+
 class Common
 {
     public function IDGenerator($numerical = false): string
@@ -36,6 +38,16 @@ class Common
             }
         }
         return ($string);
+    }
+
+    public function resolveCurrentTerm(): ?AcademicTerm
+    {
+        return AcademicTerm::whereDate('start_date', '<=', now())
+            ->whereDate('end_date', '>=', now())
+            ->first()
+            ?? AcademicTerm::whereDate('start_date', '<=', now())
+                ->orderByDesc('start_date')
+                ->first();
     }
 
 }

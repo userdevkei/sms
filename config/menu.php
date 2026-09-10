@@ -3,10 +3,10 @@
 return [
     ['label' => 'Dashboard', 'icon' => 'bi-speedometer2', 'route' => 'dashboard', 'permission' => null],
 
-    ['label' => 'Admissions', 'icon' => 'bi-clipboard-check', 'permission' => 'admissions.view', 'children' => [
-        ['label' => 'Applications', 'route' => 'admissions.index', 'permission' => 'admissions.view'],
-        ['label' => 'New Application', 'route' => 'admissions.create', 'permission' => 'admissions.create'],
-    ]],
+//    ['label' => 'Admissions', 'icon' => 'bi-clipboard-check', 'permission' => 'admissions.view', 'children' => [
+//        ['label' => 'Applications', 'route' => 'admissions.index', 'permission' => 'admissions.view'],
+//        ['label' => 'New Application', 'route' => 'admissions.create', 'permission' => 'admissions.create'],
+//    ]],
 
     ['label' => 'Students', 'icon' => 'bi-people', 'permission' => 'students.view', 'children' => [
         ['label' => 'All Students', 'route' => 'students.index', 'permission' => 'students.view'],
@@ -60,12 +60,20 @@ return [
         ['label' => 'Room Allocations', 'route' => 'accommodation.allocations.index', 'permission' => 'accommodation.view'],
     ]],
 
-    ['label' => 'HR', 'icon' => 'bi-person-badge', 'route' => 'hr.index', 'permission' => 'hr.view'],
-    ['label' => 'Accounting', 'icon' => 'bi-calculator', 'route' => 'accounting.index', 'permission' => 'accounting.view'],
+//    ['label' => 'HR', 'icon' => 'bi-person-badge', 'route' => 'hr.index', 'permission' => 'hr.view'],
+    ['label' => 'Accounting', 'icon' => 'bi-calculator', 'permission' => 'accounting.view', 'children' => [
+        ['label' => 'Overview', 'route' => 'accounting.index', 'permission' => 'accounting.view'],
+        ['label' => 'Income', 'route' => 'accounting.income.index', 'permission' => 'income.view'],
+        ['label' => 'Expenses', 'route' => 'accounting.expense.index', 'permission' => 'expenses.view'],
+        ['label' => 'Income Categories', 'route' => 'accounting.income-categories.index', 'permission' => 'income.manage'],
+        ['label' => 'Expense Categories', 'route' => 'accounting.expense-categories.index', 'permission' => 'expenses.manage'],
+        ['label' => 'Reports', 'route' => 'accounting.reports.summary', 'permission' => 'accounting.view'],
+    ]],
 
     ['label' => 'Administration', 'icon' => 'bi-gear', 'permission' => 'admin.view', 'children' => [
         ['label' => 'Users', 'route' => 'users.index', 'permission' => 'users.view'],
         ['label' => 'Roles & Permissions', 'route' => 'roles.index', 'permission' => 'roles.manage'],
         ['label' => 'School Settings', 'route' => 'settings.index', 'permission' => 'settings.manage'],
+        ['label' => 'Logs & Audit', 'route' => 'logs.index', 'permission' => 'settings.manage'],
     ]],
 ];
