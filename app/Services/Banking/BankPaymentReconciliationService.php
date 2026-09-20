@@ -76,6 +76,13 @@ class BankPaymentReconciliationService
 
         $student = User::where('userID', trim($txn->account_reference))->first();
 
+        Log::info('Attempting to auto-match bank transaction', [
+            'bank' => $txn->bank,
+            'transaction_ref' => $txn->transaction_ref,
+            'account_reference' => $txn->account_reference,
+            'student_found' => $student,
+        ]);
+
         if (!$student) {
             Log::warning('Bank IPN could not auto-match student', [
                 'bank' => $txn->bank,
@@ -87,7 +94,7 @@ class BankPaymentReconciliationService
 
         $payment = Payment::create([
             'payment_number' => $this->generatePaymentNumber(),
-            'user_id' => $student->user_id,
+            'user_id' => $student->id,
             'method' => 'bank',
             'gateway' => $txn->bank,
             'gateway_transaction_id' => $txn->transaction_ref,

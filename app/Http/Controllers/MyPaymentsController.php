@@ -107,8 +107,14 @@ public function status(Request $request, MpesaTransaction $transaction, MpesaStk
             // a definitive 0 or a definitive failure code as resolving.
             $resultCode = $result['ResultCode'] ?? null;
 
+            Log::info('M-Pesa status query fallback', [
+                'transaction_id' => $transaction->id,
+                'result_code'    => $resultCode,
+                'result_desc'    => $result['ResultDesc'] ?? null,
+            ]);
+
             if ($resultCode !== null) {
-                if ((int) $resultCode === 0) {
+                if ((int) $resultCode == 0) {
                     $items = collect(data_get($result, 'CallbackMetadata.Item', []))
                         ->mapWithKeys(fn ($item) => [$item['Name'] => $item['Value'] ?? null]);
 
@@ -125,6 +131,10 @@ public function status(Request $request, MpesaTransaction $transaction, MpesaStk
                     ]);
 
                     if (! \App\Models\Payment::where('reference_number', $mpesaReceipt)->exists()) {
+                        Log::info('Creating new payment record', [
+                            'transaction_id' => $transaction->id,
+                            'mpesa_receipt'  => $mpesaReceipt,
+                        ]);
                         $count = \App\Models\Payment::query()->count() + 1;
                         \App\Models\Payment::create([
                             'payment_number'   => 'RCT-' . date('Y') . '-' . str_pad($count, 6, '0', STR_PAD_LEFT),
