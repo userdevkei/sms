@@ -9,7 +9,7 @@ class StoreIncomeCategoryRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasPermission('accounting.income.manage') ?? false;
+        return $this->user()?->hasPermission('accounting.manage') ?? false;
     }
 
     public function rules(): array

@@ -156,7 +156,7 @@
                 <div class="col-6 col-md-3"><a href="{{ route('finance.invoices.index') }}" class="quick-link"><i class="bi bi-receipt"></i> Invoices</a></div>
                 <div class="col-6 col-md-3"><a href="{{ route('finance.payments.index') }}" class="quick-link"><i class="bi bi-credit-card"></i> Payments</a></div>
                 <div class="col-6 col-md-3"><a href="{{ route('finance.fee-structures.index') }}" class="quick-link"><i class="bi bi-cash-coin"></i> Fee Structures</a></div>
-                <div class="col-6 col-md-3"><a href="{{ route('finance.bank-transactions.index') }}" class="quick-link"><i class="bi bi-bank"></i> Bank Reconciliation</a></div>
+                <div class="col-6 col-md-3"><a href="{{ route('finance.bank-reconciliation.index') }}" class="quick-link"><i class="bi bi-bank"></i> Bank Reconciliation</a></div>
             </div>
         </div>
     @endif

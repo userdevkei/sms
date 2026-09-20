@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasStringId;
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ExpenseTransaction extends Model
 {
-    use HasStringId, softDeletes;
+    use HasStringId, softDeletes, LogsActivity;
 
     protected $fillable = ['id', 'reference', 'transaction_date', 'academic_year', 'term', 'vendor', 'payment_method', 'description', 'total_amount', 'recorded_by'];
     protected $casts = ['transaction_date' => 'date', 'total_amount' => 'decimal:2'];

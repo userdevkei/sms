@@ -10,7 +10,7 @@ class StoreStudentRouteStopRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasPermission('transport.manage') ?? false;
+        return $this->user()?->hasPermission('transport.update.student-transport') ?? false;
     }
 
     public function rules(): array

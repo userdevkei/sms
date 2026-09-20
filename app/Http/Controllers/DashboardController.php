@@ -317,7 +317,7 @@ class DashboardController extends Controller
             ->where('status', 'active')->count();
 
         $genderSplit = StudentEnrollment::whereIn('stream_id', $myStreamIds)
-            ->where('status', 'active')
+            ->where('users.status', 'active')
             ->join('users', 'users.id', '=', 'student_enrollments.user_id')
             ->select('users.gender', DB::raw('count(*) as total'))
             ->groupBy('users.gender')->pluck('total', 'gender');

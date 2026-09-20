@@ -111,6 +111,7 @@ class UserController extends Controller
                 'profile_url'   => route('users.profile', $user->id),
                 'edit_url'   => route('users.edit', $user->id),
                 'delete_url' => route('users.destroy', $user->id),
+                'impersonate_url' => route('impersonate.start', $user->id),
             ];
         });
 

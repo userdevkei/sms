@@ -111,7 +111,7 @@ class AccountingReportController extends Controller
 
     public function summary(Request $request)
     {
-        abort_unless($request->user()?->hasPermission('accounting.reports.view'), 403);
+        abort_unless($request->user()?->hasPermission('accounting.view'), 403);
 
         $academicYear = $request->input('academic_year') ?? (new Common())->resolveCurrentTerm()->academic_year ?? (string) now()->year;
         $term = $request->input('term'); // null = whole year

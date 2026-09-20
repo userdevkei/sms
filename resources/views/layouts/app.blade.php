@@ -50,6 +50,7 @@
                 </div>
             @endif
 
+            @include('partials.impersonation-banner')
             @yield('content')
         </div>
 

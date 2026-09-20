@@ -7,7 +7,7 @@
             <h1 class="h4 mb-1">Voteheads</h1>
             <p class="text-muted mb-0">The individual fee categories used when building fee structures — Tuition, Activity Fees, Remedial, etc.</p>
         </div>
-        @can('fee_structures.manage')
+        @can('voteheads.create')
             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addVoteheadModal"><i class="bi bi-plus-lg me-1"></i> Add Votehead</button>
         @endcan
     </div>
@@ -26,11 +26,13 @@
                             <td><span class="badge bg-secondary-subtle text-secondary text-capitalize">{{ $votehead->category }}</span></td>
                             <td><span class="badge bg-{{ $votehead->status === 'active' ? 'success' : 'secondary' }}-subtle text-{{ $votehead->status === 'active' ? 'success' : 'secondary' }} text-capitalize">{{ $votehead->status }}</span></td>
                             <td class="text-end">
-                                @can('fee_structures.manage')
+                                @can('voteheads.update')
                                     <button type="button" class="btn btn-sm btn-outline-primary me-1 btn-edit-votehead"
                                             data-id="{{ $votehead->id }}" data-name="{{ $votehead->name }}" data-code="{{ $votehead->code }}"
                                             data-category="{{ $votehead->category }}" data-description="{{ $votehead->description }}" data-status="{{ $votehead->status }}"
                                             data-url="{{ route('finance.voteheads.update', $votehead->id) }}"><i class="bi bi-pencil"></i></button>
+                                @endcan
+                                @can('voteheads.delete')
                                     <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-url="{{ route('finance.voteheads.destroy', $votehead->id) }}"><i class="bi bi-trash"></i></button>
                                 @endcan
                             </td>
@@ -44,7 +46,7 @@
         </div>
     </div>
 
-    @can('fee_structures.manage')
+    @can('voteheads.create')
         <div class="modal fade" id="addVoteheadModal" tabindex="-1">
             <div class="modal-dialog">
                 <form method="POST" action="{{ route('finance.voteheads.store') }}">

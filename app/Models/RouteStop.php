@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasStringId;
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RouteStop extends Model
 {
-    use HasStringId;
+    use HasStringId, LogsActivity;
 
     protected $fillable = ['id', 'route_id', 'name', 'sequence', 'landmark_description', 'fare'];
 

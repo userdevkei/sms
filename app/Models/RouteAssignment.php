@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasStringId;
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RouteAssignment extends Model
 {
-    use HasStringId;
+    use HasStringId, LogsActivity;
 
     protected $fillable = ['id', 'route_id', 'vehicle_id', 'driver_id', 'term', 'start_date', 'end_date', 'status'];
 

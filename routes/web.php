@@ -7,10 +7,18 @@ use Illuminate\Http\Request;
 
 use App\Http\Controllers\{AccountingReportController,
     AdminPaymentController,
+    BankReconciliationController,
     ExpenseCategoryController,
     ExpenseTransactionController,
+    ImpersonationController,
     IncomeCategoryController,
     IncomeTransactionController,
+    LessonRequirementController,
+    LogController,
+    MyTimetableController,
+    TimeSlotController,
+    TimeSlotGroupController,
+    TimetableController,
     VehicleController,
     UserController,
     TransportRouteController,
@@ -69,7 +77,7 @@ Route::prefix('finance')->name('finance.')->middleware(['auth', 'can:fee_structu
     Route::get('fee-structures/{fee_structure}', [FeeStructureController::class, 'show'])->name('fee-structures.show');
 });
 
-Route::prefix('finance')->name('finance.')->middleware(['auth', 'can:fee_structures.manage'])->group(function () {
+Route::prefix('finance')->name('finance.')->middleware(['auth'])->group(function () {
     Route::post('voteheads', [VoteheadController::class, 'store'])->name('voteheads.store');
     Route::put('voteheads/{votehead}', [VoteheadController::class, 'update'])->name('voteheads.update');
     Route::delete('voteheads/{votehead}', [VoteheadController::class, 'destroy'])->name('voteheads.destroy');
@@ -238,9 +246,9 @@ Route::middleware('auth')->group(function () {
         Route::get('export-pdf', [StudentController::class, 'exportPdf'])->name('export.pdf')->middleware('can:users.view');
         Route::get('export-excel', [StudentController::class, 'exportExcel'])->name('export.excel')->middleware('can:users.view');
 
-        Route::get('/students/{viewedUser}/statement/pdf', [MyStatementController::class, 'pdf'])
-            ->name('statement.pdf')
-            ->middleware('can:students.statements');
+        Route::get('/students/{viewedUser}/statement/pdf', [MyStatementController::class, 'pdf'])->name('statement.pdf')->middleware('can:students.statements');
+
+        Route::get('impersonate-student', [StudentController::class, 'impersonate'])->name('impersonate')->middleware('can:students.impersonate');
     });
 
     Route::prefix('roles')->name('roles.')->group( function () {
@@ -467,7 +475,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('allocations/{allocation}', [RoomAllocationController::class, 'destroy'])->name('allocations.destroy');
     });
 
-    Route::prefix('results')->name('results.')->middleware(['auth', 'can:curriculum.manage'])->group(function () {
+    Route::prefix('results')->name('results.')->middleware(['auth'])->group(function () {
         Route::get('grading-bands', [GradingBandController::class, 'index'])->name('grading-bands.index');
         Route::post('grading-bands', [GradingBandController::class, 'store'])->name('grading-bands.store');
         Route::put('grading-bands/{gradingBand}', [GradingBandController::class, 'update'])->name('grading-bands.update');
@@ -489,7 +497,7 @@ Route::middleware('auth')->group(function () {
 
     });
 
-    Route::prefix('finance')->name('finance.')->middleware(['auth', 'can:fee_structures.manage'])->group(function () {
+    Route::prefix('finance')->name('finance.')->middleware(['auth'])->group(function () {
         Route::post('voteheads', [VoteheadController::class, 'store'])->name('voteheads.store');
         Route::put('voteheads/{votehead}', [VoteheadController::class, 'update'])->name('voteheads.update');
         Route::delete('voteheads/{votehead}', [VoteheadController::class, 'destroy'])->name('voteheads.destroy');
@@ -497,6 +505,13 @@ Route::middleware('auth')->group(function () {
         Route::get('fee-structures-create', [FeeStructureController::class, 'create'])->name('fee-structures.create');
         Route::post('fee-structures', [FeeStructureController::class, 'store'])->name('fee-structures.store');
         Route::delete('fee-structures/{fee_structure}', [FeeStructureController::class, 'destroy'])->name('fee-structures.destroy');
+
+        Route::prefix('bank-reconciliation')->name('bank-reconciliation.')->group(function () {
+            Route::get('/', [BankReconciliationController::class, 'index'])->name('index');
+            Route::get('/data', [BankReconciliationController::class, 'data'])->name('data');
+            Route::get('/students', [BankReconciliationController::class, 'students'])->name('students');
+            Route::post('/{transaction}/match', [BankReconciliationController::class, 'match'])->name('match');
+        });
     });
 
     Route::prefix('finance')->name('finance.')->middleware(['auth', 'can:fee_structures.approve'])->group(function () {
@@ -566,7 +581,7 @@ Route::middleware('auth')->group(function () {
         Route::get('my-results', [MyResultsController::class, 'index'])->name('my-results.index');
         Route::get('my-report-cards/{term_overall_result}/pdf', [ReportCardPdfController::class, 'show'])->name('my-report-cards.pdf');
         Route::get('my-report-cards/year/{stream}/{academicYear}/pdf/{studentEnrollment}', [ReportCardPdfController::class, 'showYear'])->name('my-report-cards.year-pdf');
-        Route::get('report-cards/assessment/{stream}/{academicTerm}/{name}/pdf/{studentEnrollment}', [ReportCardPdfController::class, 'showAssessment'])->name('my-report-cards.assessment-pdf');
+        Route::get('my-report-cards/assessment/{stream}/{academicTerm}/{name}/pdf/{studentEnrollment}', [ReportCardPdfController::class, 'showAssessment'])->name('my-report-cards.assessment-pdf');
     });
 
     Route::get('my-profile', [MyProfileController::class, 'show'])->name('profile.show');
@@ -585,7 +600,7 @@ Route::middleware('auth')->group(function () {
     Route::post('my-payments/retry/{transaction}', [MyPaymentsController::class, 'retry'])->name('finance.my-payments.retry');
     Route::get('finance/my-payments/status/{transaction}', [MyPaymentsController::class, 'status'])->name('finance.my-payments.status');
 
-    Route::prefix('accounting')->name('accounting.')->middleware(['auth'])->group(function () {
+    Route::prefix('accounting')->name('accounting.')->group(function () {
 
         Route::get('/', [AccountingReportController::class, 'index'])->name('index');
         // Income categories
@@ -602,6 +617,7 @@ Route::middleware('auth')->group(function () {
             Route::delete('{expense_category}/destroy-expense-category', [ExpenseCategoryController::class, 'destroy'])->name('destroy');
             Route::post('create-expense-category', [ExpenseCategoryController::class, 'store'])->name('store');
         });
+
         // Income transactions
         Route::name('income.')->group(function () {
             Route::get('incomes', [IncomeTransactionController::class, 'index'])->name('index');
@@ -636,7 +652,52 @@ Route::middleware('auth')->group(function () {
             Route::get('reports/export', [AccountingReportController::class, 'export'])->name('reports.export');
         });
     });
+
+    Route::prefix('logs')->name('logs.')->middleware(['auth', 'can:logs.view'])->group(function () {
+        Route::get('/', [LogController::class, 'index'])->name('index');
+        Route::get('data', [LogController::class, 'data'])->name('data');
+        Route::get('{log}/details', [LogController::class, 'details'])->name('details');
+        Route::get('export', [LogController::class, 'export'])->name('export');
+    });
+
+    Route::prefix('timetables')->name('timetables.')->middleware(['auth', 'can:timetable.view'])->group(function () {
+        Route::get('/', [TimetableController::class, 'index'])->name('index');
+        Route::get('create', [TimetableController::class, 'create'])->name('create')->middleware('can:timetable.manage');
+        Route::post('/', [TimetableController::class, 'store'])->name('store')->middleware('can:timetable.manage');
+        Route::get('{timetable}/preview', [TimetableController::class, 'preview'])->name('preview');
+        Route::post('{timetable}/generate', [TimetableController::class, 'generate'])->name('generate');
+        Route::post('{timetable}/approve', [TimetableController::class, 'approve'])->name('approve');
+        Route::post('{timetable}/publish', [TimetableController::class, 'publish'])->name('publish');
+
+        Route::get('/my-timetable', [MyTimetableController::class, 'index'])->name('my-timetable.index');
+        Route::get('/my-class-timetable', [MyTimetableController::class, 'classTimetable'])->name('my-timetable.class');
+    });
+
+    Route::resource('timeslot-groups', TimeSlotGroupController::class)->except('show')->middleware(['auth', 'can:timetables.manage']);
+
+    Route::prefix('timeslots')->name('timeslots.')->middleware(['auth', 'can:timetables.manage'])->group(function () {
+        Route::get('/', [TimeSlotController::class, 'index'])->name('index');
+        Route::get('create', [TimeSlotController::class, 'create'])->name('create');
+        Route::post('/', [TimeSlotController::class, 'store'])->name('store');
+        Route::get('{timeslot}/edit', [TimeSlotController::class, 'edit'])->name('edit');
+        Route::put('{timeslot}', [TimeSlotController::class, 'update'])->name('update');
+        Route::delete('{timeslot}', [TimeSlotController::class, 'destroy'])->name('destroy');
+        Route::get('bulk-create', [TimeSlotController::class, 'bulkCreate'])->name('bulk-create');
+        Route::post('bulk-store', [TimeSlotController::class, 'bulkStore'])->name('bulk-store');
+    });
+
+    Route::prefix('curriculum/lesson-requirements')->name('curriculum.lesson-requirements.')
+        ->middleware(['auth', 'can:curriculum.view'])->group(function () {
+            Route::get('/', [LessonRequirementController::class, 'index'])->name('index');
+            Route::get('{gradeLevel}/edit', [LessonRequirementController::class, 'edit'])->name('edit')->middleware('can:curriculum.manage');
+            Route::put('{gradeLevel}', [LessonRequirementController::class, 'update'])->name('update')->middleware('can:curriculum.manage');
+        });
+
+    Route::post('/impersonate/stop', [ImpersonationController::class, 'stop'])->name('impersonate.stop');
+    Route::get('/impersonate/{user}', [ImpersonationController::class, 'start'])->name('impersonate.start');
 });
+
+
 
 Route::post('/mpesa/callback', [MyPaymentsController::class, 'handle'])->name('mpesa.callback')->withoutMiddleware(['auth', 'verified']); // adjust to whatever middleware wraps your web routes
 

@@ -7,7 +7,7 @@
             <h1 class="h4 mb-1">Fee Structures</h1>
             <p class="text-muted mb-0">Versioned fee schedules per grade level and term.</p>
         </div>
-        @can('fee_structures.manage')
+        @can('fee_structures.create')
             <a href="{{ route('finance.fee-structures.create') }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> New Fee Structure</a>
         @endcan
     </div>

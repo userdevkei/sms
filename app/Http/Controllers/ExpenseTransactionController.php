@@ -26,9 +26,10 @@ class ExpenseTransactionController extends Controller
         $categories = ExpenseCategory::where('status', 'active')->orderBy('name')->get();
         $academicYear = Setting::allSettings()['current_academic_year'] ?? (string) now()->year;
         $academicYears = ExpenseTransaction::query()->distinct()->orderByDesc('academic_year')->pluck('academic_year');
-        $canDelete = request()->user()?->hasPermission('expenses.manage.delete') ?? false;
+        $canDelete = request()->user()?->hasPermission('expenses.delete') ?? false;
+        $canUpdate = request()->user()?->hasPermission('expenses.update') ?? false;
 
-        return view('accounting.expense.index', compact('categories', 'academicYear', 'canDelete', 'academicYears'));
+        return view('accounting.expense.index', compact('categories', 'academicYear', 'canDelete', 'academicYears', 'canUpdate'));
     }
 
     public function data(Request $request): JsonResponse

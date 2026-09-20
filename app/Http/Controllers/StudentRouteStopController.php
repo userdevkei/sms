@@ -60,7 +60,7 @@ class StudentRouteStopController extends Controller
 
     public function destroy(StudentRouteStop $studentRouteStop): JsonResponse
     {
-        abort_unless(request()->user()?->hasPermission('transport.manage'), 403);
+        abort_unless(request()->user()?->hasPermission('transport.update.student-transport'), 403);
 
         $studentRouteStop->delete(); // soft delete — invoices already generated still reference this row
 

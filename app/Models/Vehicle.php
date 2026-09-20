@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasStringId;
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Vehicle extends Model
 {
-    use HasStringId, SoftDeletes;
+    use HasStringId, SoftDeletes, LogsActivity;
 
     protected $fillable = [
         'id', 'registration_number', 'make', 'model', 'year_of_manufacture',

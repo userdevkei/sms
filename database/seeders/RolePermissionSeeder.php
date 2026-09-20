@@ -42,7 +42,16 @@ class RolePermissionSeeder extends Seeder
                 'accommodation.view',
                 'hr.view',
                 'accounting.view',
-                'admin.view'
+                'admin.view',
+                'timetable.view',
+                'timetable.create',
+                'timetable.edit',
+                'timetable.delete',
+                'timetable.manage',
+                'time_slots.view',
+                'time_slots.create',
+                'time_slots.edit',
+                'time_slots.delete',
             ],
 
             'registrar' => [
@@ -55,6 +64,13 @@ class RolePermissionSeeder extends Seeder
                 'students.import',
                 'curriculum.view',
                 'reports.admissions',
+                'time_slots.view',
+                'time_slots.create',
+                'time_slots.edit',
+                'timetable.view',
+                'timetable.create',
+                'timetable.edit',
+                'timetable.manage',
             ],
 
             'finance_officer' => [
@@ -72,7 +88,36 @@ class RolePermissionSeeder extends Seeder
                 'other_charges.view',
                 'other_charges.manage',
                 'students.view',
+                'students.profile',
                 'reports.finance',
+                'accounting.view',
+                'accounting.manage',
+                'income.view',
+                'income.create',
+                'income.update',
+                'income.manage',
+                'expenses.view',
+                'expenses.create',
+                'expenses.update',
+                'expenses.manage',
+                'expense.categories.create',
+                'expense.categories.update',
+                'expense.categories.manage',
+                'income.categories.create',
+                'income.categories.update',
+                'income.categories.manage',
+                'transport.update.student-transport',
+                'exemptions.manage',
+                'voteheads.view',
+                'voteheads.create',
+                'voteheads.update',
+                'other_charges_type.manage',
+                'other_charges.manage',
+                'other_charges_type.create',
+                'other_charges_type.update',
+                'other_charges.create',
+                'bank_reconciliation.view',
+                'bank_reconciliation.manage',
             ],
 
             'teacher' => [
@@ -80,6 +125,9 @@ class RolePermissionSeeder extends Seeder
                 'results.view',
                 'results.enter_marks',
                 'students.view',
+                'my-timetable.view',
+                'timetable.view',
+                'students.profile',
             ],
 
             'class_teacher' => [
@@ -89,6 +137,10 @@ class RolePermissionSeeder extends Seeder
                 'students.view',
                 'progression.initiate',
                 'reports.academic',
+                'my-timetable.view',
+                'timetable.view',
+                'my-timetable.class',
+                'results.report_cards.view'
             ],
 
             'parent' => [
@@ -98,12 +150,15 @@ class RolePermissionSeeder extends Seeder
                 'payments.record',
                 'results.view',
                 'students.view',
+                'my-timetable.view',
             ],
 
             'student' => [
                 'my-results.view',
                 'my-statement.view',
                 'my-payments.view',
+                'my-timetable.view',
+                'timetable.view'
             ],
 
             'transport_coordinator' => [
@@ -133,6 +188,8 @@ class RolePermissionSeeder extends Seeder
             'my-results.view',
             'my-statement.view',
             'my-payments.view',
+            'my-timetable.view',
+            'my-timetable.class'
         ];
 
         foreach ($map as $slug => $permissionNames) {

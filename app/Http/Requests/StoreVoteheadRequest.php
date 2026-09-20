@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreVoteheadRequest extends FormRequest
 {
-    public function authorize(): bool { return $this->user()?->hasPermission('fee_structures.manage') ?? false; }
+    public function authorize(): bool { return $this->user()?->hasPermission('voteheads.create') ?? false; }
 
     public function rules(): array
     {

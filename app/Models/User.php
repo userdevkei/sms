@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Concerns\HasStringId;
+use App\Traits\LogsActivity;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\Storage;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes, HasStringId;
+    use HasFactory, Notifiable, SoftDeletes, HasStringId, LogsActivity;
 
     protected $fillable = [
         'id', 'userID', 'first_name', 'middle_name', 'last_name', 'gender',
@@ -138,4 +139,6 @@ class User extends Authenticatable
     {
         return $this->hasMany(Invoice::class);
     }
+
+
 }

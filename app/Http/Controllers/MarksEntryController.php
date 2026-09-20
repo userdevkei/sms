@@ -50,7 +50,7 @@ class MarksEntryController extends Controller
             ->whereHas('results')
             ->count();
 
-        $canFinalize = $assessmentsWithMarksCount >= 1;
+        $canFinalize = $assessmentsWithMarksCount >= 1 && auth()->user()->hasPermission('results.approve');
 
         return view('results.marks-entry.edit', compact('assessment', 'enrollments', 'canFinalize'));
     }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasStringId;
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Invoice extends Model
 {
-    use HasStringId, softDeletes;
+    use HasStringId, softDeletes, LogsActivity;
 
     protected $fillable = [
         'id', 'invoice_number', 'user_id', 'grade_level_id', 'academic_year', 'term',
