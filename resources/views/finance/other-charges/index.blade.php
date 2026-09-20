@@ -7,7 +7,7 @@
             <h1 class="h4 mb-1">Other Charges</h1>
             <p class="text-muted mb-0">One-off charges scoped to a student, stream, or grade level — applied automatically when invoices are generated.</p>
         </div>
-        @can('other_charges.manage')
+        @can('other_charges.create')
             <a href="{{ route('finance.other-charges.create') }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Add Charge</a>
         @endcan
     </div>

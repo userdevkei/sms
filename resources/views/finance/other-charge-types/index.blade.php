@@ -7,7 +7,7 @@
             <h1 class="h4 mb-1">Other Charge Types</h1>
             <p class="text-muted mb-0">Categories used when adding one-off charges (e.g. Trip Fee, Uniform, Exam Fee).</p>
         </div>
-        @can('other_charges.manage')
+        @can('other_charges_type.create')
             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#typeModal" onclick="openCreateModal()">
                 <i class="bi bi-plus-lg me-1"></i> Add Type
             </button>
@@ -21,7 +21,7 @@
                     <thead>
                     <tr><th>#</th>
                         <th>Name</th><th>Description</th><th>Status</th>
-                        @can('other_charges.manage')<th class="text-end">Actions</th>@endcan
+                        @can('other_charges_type.manage')<th class="text-end">Actions</th>@endcan
                     </tr>
                     </thead>
                     <tbody>
@@ -31,10 +31,14 @@
                             <td>{{ $type->name }}</td>
                             <td class="text-muted">{{ $type->description ?: '—' }}</td>
                             <td><span class="badge {{ $type->status === 'active' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' }} text-capitalize">{{ $type->status }}</span></td>
-                            @can('other_charges.manage')
+                            @can('other_charges_type.manage')
                                 <td class="text-end">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='openEditModal(@json($type))'><i class="bi bi-pencil"></i></button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteType('{{ $type->id }}')"><i class="bi bi-trash"></i></button>
+                                    @can('other_charges_type.update')
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick='openEditModal(@json($type))'><i class="bi bi-pencil"></i></button>
+                                    @endcan
+                                    @can('other_charges_type.delete')
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteType('{{ $type->id }}')"><i class="bi bi-trash"></i></button>
+                                    @endcan
                                 </td>
                             @endcan
                         </tr>

@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasStringId;
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TermResultCompletion extends Model
 {
-    use HasStringId, softDeletes;
+    use HasStringId, softDeletes, LogsActivity;
 
     protected $fillable = ['id', 'user_id', 'academic_year', 'term_number', 'completed_at', 'recorded_by'];
 

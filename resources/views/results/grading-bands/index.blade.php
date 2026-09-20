@@ -7,9 +7,11 @@
             <h1 class="h4 mb-1">Grading Bands</h1>
             <p class="text-muted mb-0">Letter grades and points assigned to score ranges, used when finalizing subject results.</p>
         </div>
-        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#bandModal" onclick="resetBandForm()">
-            <i class="bi bi-plus-lg me-1"></i> Add Band
-        </button>
+        @can('grading.manage')
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#bandModal" onclick="resetBandForm()">
+                <i class="bi bi-plus-lg me-1"></i> Add Band
+            </button>
+        @endcan
     </div>
 
     <x-results-tabs active="grading-bands" />
@@ -20,7 +22,7 @@
                 <table id="bandsTable" class="table table-hover table-sm table-striped fs-sm w-100">
                     <thead>
                     <tr><th>#</th>
-                        <th>Range</th><th>Letter Grade</th><th>Points</th><th>Remark</th><th class="text-end">Actions</th>
+                        <th>Range</th><th>Letter Grade</th><th>Points</th><th>Remark</th>@can('grading.manage')<th class="text-end">Actions</th>@endcan
                     </tr>
                     </thead>
                     <tbody>
@@ -31,16 +33,18 @@
                             <td><span class="badge bg-primary-subtle text-primary">{{ $band->letter_grade }}</span></td>
                             <td>{{ $band->points ?? '-' }}</td>
                             <td>{{ $band->remark ?? '-' }}</td>
-                            <td class="text-end">
-                                <button type="button" class="btn btn-sm btn-outline-secondary"
-                                        onclick='editBand(@json($band))'>
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <form method="POST" action="{{ route('results.grading-bands.destroy', $band->id) }}" class="d-inline delete-band-form">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                                </form>
-                            </td>
+                            @can('grading.manage')
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                                            onclick='editBand(@json($band))'>
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <form method="POST" action="{{ route('results.grading-bands.destroy', $band->id) }}" class="d-inline delete-band-form">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            @endcan
                         </tr>
                     @empty
                         <tr><td colspan="5" class="text-center text-muted py-3">No grading bands defined yet.</td></tr>

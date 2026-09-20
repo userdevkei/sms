@@ -162,6 +162,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const canDelete = @json($canDelete);
+            const canUpdate = @json($canUpdate);
             const exportBaseUrl = '{{ route("accounting.income.export") }}';
 
             $('#filterCategory, #filterYear, #filterTerm').select2({
@@ -218,7 +219,9 @@
                         render: function (data, type, row) {
                             let buttons = `<div class="d-inline-flex flex-nowrap align-items-center gap-1">`;
                             buttons += `<a href="${row.receipt_url}" target="_blank" class="btn btn-sm btn-outline-primary" title="Print receipt"><i class="bi bi-printer"></i></a>`;
+                            if (canUpdate) {
                             buttons += `<a href="${row.edit_url}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>`;
+                            }
                             if (canDelete) {
                                 buttons += `<button type="button" class="btn btn-sm btn-outline-danger btn-delete-income" data-config='${JSON.stringify({id: row.id, url: row.delete_url})}'><i class="bi bi-trash"></i></button>`;
                             }

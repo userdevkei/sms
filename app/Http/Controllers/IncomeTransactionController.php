@@ -24,9 +24,10 @@ class IncomeTransactionController extends Controller
         $categories = IncomeCategory::where('status', 'active')->orderBy('name')->get();
         $academicYear = Setting::allSettings()['current_academic_year'] ?? (string) now()->year;
         $academicYears = IncomeTransaction::query()->distinct()->orderByDesc('academic_year')->pluck('academic_year');
-        $canDelete = request()->user()?->hasPermission('income.manage') ?? false;
+        $canDelete = request()->user()?->hasPermission('income.delete') ?? false;
+        $canUpdate = request()->user()?->hasPermission('income.update') ?? false;
 
-        return view('accounting.income.index', compact('categories', 'academicYear', 'academicYears', 'canDelete'));
+        return view('accounting.income.index', compact('categories', 'academicYear', 'academicYears', 'canDelete', 'canUpdate'));
     }
 
     public function data(Request $request): JsonResponse

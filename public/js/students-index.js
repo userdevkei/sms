@@ -1,3 +1,8 @@
+// Escapes DB values before they are placed into HTML strings/attributes.
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+}[c]));
+
 $(function () {
     const table = $('#usersTable').DataTable({
         processing: true,
@@ -18,12 +23,13 @@ $(function () {
             {
                 data: 'avatar', orderable: false, searchable: false,
                 render: (avatar, type, row) =>
-                    `<img src="${avatar}" class="rounded-circle" width="36" height="36" style="object-fit:cover;" alt="${row.name}">`
+                    `<img src="${esc(avatar)}" class="rounded-circle" width="36" height="36" style="object-fit:cover;" alt="${esc(row.name)}">`
             },
-            { data: 'userID' },
-            { data: 'name' },
-            { data: 'email' },
-            { data: 'phone' },
+            // render.text() makes DataTables treat these as plain text, not HTML
+            { data: 'userID', render: $.fn.dataTable.render.text() },
+            { data: 'name',   render: $.fn.dataTable.render.text() },
+            { data: 'email',  render: $.fn.dataTable.render.text() },
+            { data: 'phone',  render: $.fn.dataTable.render.text() },
             {
                 data: 'status',
                 render: function (status) {
@@ -32,25 +38,47 @@ $(function () {
                         suspended: 'danger', transferred: 'info', graduated: 'primary', deceased: 'dark'
                     };
                     const cls = map[status] || 'secondary';
-                    return `<span class="badge bg-${cls}-subtle text-${cls} border border-${cls}-subtle text-capitalize">${status}</span>`;
+                    return `<span class="badge bg-${cls}-subtle text-${cls} border border-${cls}-subtle text-capitalize">${esc(status)}</span>`;
                 }
             },
             { data: 'created_at' },
             {
                 data: null, orderable: false, searchable: false, className: 'text-end nowrap',
                 render: function (row) {
-                    if (!canManageUsers) return '';
-                    return`
-                        <a href="${row.profile_url}" class="btn btn-sm btn-outline-secondary me-1" title="View Profile">
-                            <i class="bi bi-person"></i>
-                        </a>
-                        <a href="${row.edit_url}" class="btn btn-sm btn-outline-primary me-1" title="Edit">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <button type="button" class="btn btn-sm btn-outline-danger btn-delete-user"
-                                data-url="${row.delete_url}" data-name="${row.name}" title="Delete">
-                            <i class="bi bi-trash"></i>
-                        </button>`;
+                    let actions = '';
+
+                    // Route is POST-only, so this is a link the click handler below submits as a form.
+                    if (canImpersonateStudent && row.impersonate_url) {
+                        actions += `
+                            <a href="#" class="link link-warning mx-2 js-impersonate"
+                               data-url="${esc(row.impersonate_url)}" title="Access Student Account">
+                                <i class="bi bi-lock"></i>
+                            </a>`;
+                    }
+
+                    if (canViewStudent) {
+                        actions += `
+                            <a href="${esc(row.profile_url)}" class="link link-secondary mx-2" title="View Profile">
+                                <i class="bi bi-person"></i>
+                            </a>`;
+                    }
+
+                    if (canUpdateStudent) {
+                        actions += `
+                            <a href="${esc(row.edit_url)}" class="link link-primary mx-2" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>`;
+                    }
+
+                    if (canDeleteStudent) {
+                        actions += `
+                            <a type="button" class="link link-danger btn-delete-user"
+                               data-url="${esc(row.delete_url)}" data-name="${esc(row.name)}" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </a>`;
+                    }
+
+                    return actions;
                 }
             }
         ],
@@ -71,6 +99,21 @@ $(function () {
     $('#resetFilters').on('click', function () {
         $('#filterStatus, #filterGender, #filterRole').val('');
         table.ajax.reload();
+    });
+
+    // Impersonate: submit as POST with the CSRF token.
+    $(document).on('click', '.js-impersonate', function (e) {
+        e.preventDefault();
+
+        $('<form>', { method: 'POST', action: $(this).data('url') })
+            .append($('<input>', {
+                type: 'hidden',
+                name: '_token',
+                value: $('meta[name="csrf-token"]').attr('content'),
+            }))
+            .appendTo('body')
+            .get(0)
+            .submit();
     });
 
     $(document).on('click', '.btn-delete-user', function () {
@@ -98,7 +141,8 @@ $(function () {
             filter_status: $('#filterStatus').val() || '',
             filter_gender: $('#filterGender').val() || '',
             filter_role: $('#filterRole').val() || '',
-            search_value: $('.dataTables_filter input').val() || '',
+            // table.search() works on every DataTables version; '.dataTables_filter' was renamed in v2
+            search_value: table.search() || '',
         });
 
         window.open(`${baseUrl}?${params.toString()}`, '_blank');

@@ -25,7 +25,7 @@ $(function () {
             { data: 'gender' },
             { data: 'email' },
             { data: 'phone' },
-            { data: 'roles', orderable: false },
+            { data: 'roles' },
             {
                 data: 'status',
                 render: function (status) {
@@ -43,6 +43,9 @@ $(function () {
                 render: function (row) {
                     if (!canManageUsers) return '';
                     return`
+                        <a href="${row.impersonate_url}" class="btn btn-sm btn-outline-warning me-1" title="Access User Account">
+                            <i class="bi bi-lock"></i>
+                        </a>
                         <a href="${row.profile_url}" class="btn btn-sm btn-outline-secondary me-1" title="View Profile">
                             <i class="bi bi-person"></i>
                         </a>

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name', 100)->unique();   // e.g. "students.view"
             $table->string('module', 100);            // e.g. "students" — used for grouping in UI
             $table->string('description', 150)->nullable();
+            $table->boolean('is_principle')->default(false);
             $table->timestamps();
             $table->softDeletes();
         });

@@ -7,7 +7,7 @@
             <h1 class="h4 mb-1">Student Route Stops</h1>
             <p class="text-muted mb-0">Students assigned to a transport route stop for the current term.</p>
         </div>
-        @can('transport.manage')
+        @can('transport.update.student-transport')
             <a href="{{ route('finance.transport.student-route-stops.create') }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Assign Student</a>
         @endcan
     </div>
@@ -20,7 +20,7 @@
                         <tr><th>#</th>
                             <th>Student</th><th>Admission No.</th><th>Route</th><th>Stop</th>
                             <th class="text-end">Fare</th><th>Term</th><th>Status</th>
-                            @can('transport.manage')<th class="text-end">Actions</th>@endcan
+                            @can('transport.update.student-transport')<th class="text-end">Actions</th>@endcan
                         </tr>
                     </thead>
                     <tbody>
@@ -36,7 +36,7 @@
                                 <td>
                                     <span class="badge {{ $a->status === 'active' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' }} text-capitalize">{{ $a->status }}</span>
                                 </td>
-                                @can('transport.manage')
+                                @can('transport.update.student-transport')
                                     <td class="text-end">
                                         @if($a->status === 'active')
                                             <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeAssignment('{{ $a->id }}')"><i class="bi bi-trash"></i></button>

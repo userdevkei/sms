@@ -18,9 +18,11 @@
                 <a href="{{ route('students.index') }}" class="btn btn-kv-ghost">
                     <i class="bi bi-arrow-left"></i> Back to Students
                 </a>
-                <a href="{{ route('students.edit', $user->id) }}" class="btn btn-kv-solid">
-                    <i class="bi bi-pencil-square"></i> Edit
-                </a>
+                @can('students.update')
+                    <a href="{{ route('students.edit', $user->id) }}" class="btn btn-kv-solid">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </a>
+                @endcan
             </div>
         </div>
 

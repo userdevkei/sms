@@ -101,6 +101,10 @@
     <script>
         const usersDataUrl = @json(route('students.data'));
         const canManageUsers = @json(auth()->user()->hasPermission('students.manage'));
+        const canViewStudent = @json(auth()->user()->hasPermission('students.profile'));
+        const canUpdateStudent = @json(auth()->user()->hasPermission('students.update'));
+        const canDeleteStudent = @json(auth()->user()->hasPermission('students.delete'));
+        const canImpersonateStudent = @json(auth()->user()->hasPermission('students.impersonate'));
     </script>
     <script src="{{ asset('js/students-index.js') }}"></script>
 @endpush

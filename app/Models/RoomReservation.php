@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasStringId;
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class RoomReservation extends Model
 {
-    use HasStringId, softDeletes;
+    use HasStringId, softDeletes, LogsActivity;
 
     protected $fillable = [
         'id', 'user_id', 'hostel_id', 'preferred_room_id', 'academic_year', 'term',

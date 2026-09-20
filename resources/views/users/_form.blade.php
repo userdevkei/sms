@@ -190,8 +190,8 @@
             </div>
 
             <div class="card-footer bg-white border-0 p-4 pt-0 d-flex justify-content-end gap-2">
-                <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary px-4">{{ $isEdit ? 'Update User' : 'Create User' }}</button>
+                <a href="{{ route('users.index') }}" class="btn btn-sm btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-sm btn-primary px-4">{{ $isEdit ? 'Update User' : 'Create User' }}</button>
             </div>
         </div>
     </div>

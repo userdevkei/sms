@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasStringId;
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class ExpenseTransactionItem extends Model
 {
-    use HasStringId;
+    use HasStringId, LogsActivity;
 
     protected $fillable = ['id', 'expense_transaction_id', 'expense_category_id', 'description', 'quantity', 'unit_price', 'amount'];
     protected $casts = ['quantity' => 'decimal:2', 'unit_price' => 'decimal:2', 'amount' => 'decimal:2'];

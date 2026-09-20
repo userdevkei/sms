@@ -20,28 +20,37 @@ return [
         ['label' => 'Learning Areas', 'route' => 'curriculum.learning-areas.index', 'permission' => 'curriculum.view'],
         ['label' => 'Pathways', 'route' => 'curriculum.pathways.index', 'permission' => 'curriculum.view'],
         ['label' => 'Streams / Classes', 'route' => 'curriculum.streams.index', 'permission' => 'curriculum.view'],
+        ['label' => 'Lesson Requirements', 'route' => 'curriculum.lesson-requirements.index', 'permission' => 'curriculum.view'],
     ]],
 
-    ['label' => 'Academic Terms', 'icon' => 'bi-calendar' , 'route' => 'curriculum.academic-terms.index', 'permission' => 'curriculum.view'],
+    ['label' => 'Academic Terms', 'icon' => 'bi-calendar', 'route' => 'curriculum.academic-terms.index', 'permission' => 'curriculum.view'],
 
-    ['label' => 'Finance', 'icon' => 'bi-cash-coin', 'permission' => null, 'children' => [
+    ['label' => 'Time Tables', 'icon' => 'bi-calendar-week', 'permission' => 'timetable.view', 'children' => [
+        ['label' => 'Time Tables', 'route' => 'timetables.index', 'permission' => 'timetable.manage'],
+        ['label' => 'Time Slot Groups', 'route' => 'timeslot-groups.index', 'permission' => 'timetables.manage'],
+        ['label' => 'My Timetable', 'route' => 'timetables.my-timetable.index', 'permission' => 'my-timetable.view'],
+        ['label' => 'Class Timetable', 'route' => 'timetables.my-timetable.class', 'permission' => 'my-timetable.class'],
+    ]],
+
+    ['label' => 'Finance', 'icon' => 'bi-cash-coin', 'permission' => 'finance.view', 'children' => [
         ['label' => 'Invoices', 'route' => 'finance.invoices.index', 'permission' => 'invoices.view'],
         ['label' => 'Student Transport', 'route' => 'finance.transport.student-route-stops.index', 'permission' => 'other_charges.view'],
         ['label' => 'Payments', 'route' => 'finance.payments.index', 'permission' => 'payments.view'],
         ['label' => 'Other Charges', 'route' => 'finance.other-charges.index', 'permission' => 'other_charges.view'],
         ['label' => 'Exemptions & Scholarships', 'route' => 'finance.exemptions.index', 'permission' => 'exemptions.view'],
         ['label' => 'Fee Structures', 'route' => 'finance.fee-structures.index', 'permission' => 'fee_structures.view'],
-        ['label' => 'Vote heads', 'route' => 'finance.voteheads.index', 'permission' => 'fee_structures.view'],
+        ['label' => 'Vote heads', 'route' => 'finance.voteheads.index', 'permission' => 'voteheads.view'],
         ['label' => 'Other Charge Types', 'route' => 'finance.other-charge-types.index', 'permission' => 'other_charges.view'],
         ['label' => 'Fee Statement', 'route' => 'finance.my-statement', 'permission' => 'my-statement.view'],
         ['label' => 'Payments', 'route' => 'finance.my-payments', 'permission' => 'my-payments.view'],
+        ['label' => 'Bank Reconciliation', 'route' => 'finance.bank-reconciliation.index', 'permission' => 'bank_reconciliation.view'],
     ]],
 
     ['label' => 'Results', 'icon' => 'bi-journal-text', 'permission' => 'results.view', 'children' => [
         ['label' => 'Assessments', 'route' => 'results.assessments.index', 'permission' => 'results.view'],
         ['label' => 'Subject Allocation', 'route' => 'results.assignments.index', 'permission' => 'results.view'],
         ['label' => 'Assessment Types', 'route' => 'results.assessment-types.index', 'permission' => 'results.view'],
-        ['label' => 'Report Cards', 'route' => 'results.report-cards.index', 'permission' => 'results.view'],
+        ['label' => 'Report Cards', 'route' => 'results.report-cards.index', 'permission' => 'results.report_cards.view'],
         ['label' => 'Grading Bands', 'route' => 'results.grading-bands.index', 'permission' => 'curriculum.view'],
         ['label' => 'My Results', 'route' => 'results.my-results.index', 'permission' => 'my-results.view'],
     ]],
@@ -65,8 +74,8 @@ return [
         ['label' => 'Overview', 'route' => 'accounting.index', 'permission' => 'accounting.view'],
         ['label' => 'Income', 'route' => 'accounting.income.index', 'permission' => 'income.view'],
         ['label' => 'Expenses', 'route' => 'accounting.expense.index', 'permission' => 'expenses.view'],
-        ['label' => 'Income Categories', 'route' => 'accounting.income-categories.index', 'permission' => 'income.manage'],
-        ['label' => 'Expense Categories', 'route' => 'accounting.expense-categories.index', 'permission' => 'expenses.manage'],
+        ['label' => 'Income Categories', 'route' => 'accounting.income-categories.index', 'permission' => 'income.categories.manage'],
+        ['label' => 'Expense Categories', 'route' => 'accounting.expense-categories.index', 'permission' => 'expense.categories.manage'],
         ['label' => 'Reports', 'route' => 'accounting.reports.summary', 'permission' => 'accounting.view'],
     ]],
 

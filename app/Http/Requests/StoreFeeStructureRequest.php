@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreFeeStructureRequest extends FormRequest
 {
-    public function authorize(): bool { return $this->user()?->hasPermission('fee_structures.manage') ?? false; }
+    public function authorize(): bool { return $this->user()?->hasPermission('fee_structures.create') ?? false; }
 
     public function rules(): array
     {

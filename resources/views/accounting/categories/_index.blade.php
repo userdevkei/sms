@@ -2,9 +2,11 @@
      Expects: $categories, $type ('income'|'expense'), $title --}}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h4 mb-0">{{ $title }}</h1>
-    <a href="{{ route("accounting.{$type}-categories.create") }}" class="btn btn-primary btn-sm">
-        <i class="bi bi-plus-lg me-1"></i> Add Category
-    </a>
+    @can("{$type}.categories.create")
+        <a href="{{ route("accounting.{$type}-categories.create") }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> Add Category
+        </a>
+    @endcan
 </div>
 
 <div class="card border-0 shadow-sm">
@@ -34,13 +36,17 @@
                             </span>
                         </td>
                         <td class="text-end">
+                            @can('expense.categories.update')
                             <a href="{{ route("accounting.{$type}-categories.edit", $category->id) }}" class="btn btn-sm btn-outline-secondary">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            @endcan
+                            @can('expense.categories.delete')
                             <button type="button" class="btn btn-sm btn-outline-danger delete-category"
                                     data-config='{{ json_encode(["id" => $category->id, "name" => $category->name, "url" => route("accounting.{$type}-categories.destroy", $category->id)]) }}'>
                                 <i class="bi bi-trash"></i>
                             </button>
+                            @endcan
                         </td>
                     </tr>
                 @endforeach

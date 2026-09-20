@@ -34,10 +34,11 @@
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover table-sm table-striped fs-sm w-100">
-                    <thead><tr><th>Class</th><th>Grade Level</th><th>Pathway</th><th>Class Teacher</th><th>Capacity</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                    <thead><tr><th>#</th><th>Class</th><th>Grade Level</th><th>Pathway</th><th>Class Teacher</th><th>Capacity</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
                     <tbody>
                     @forelse($streams as $stream)
                         <tr>
+                            <td>{{ $loop->iteration }}</td>
                             <td class="fw-semibold">{{ $stream->full_name }}</td>
                             <td>{{ $stream->gradeLevel->name }}</td>
                             <td>{{ $stream->pathway?->name ?? '—' }}</td>

@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             CurriculumSeeder::class,
             AssessmentTypeSeeder::class,
+            LearningAreaSeeder::class,
         ]);
     }
 }

@@ -104,6 +104,7 @@ class StudentController extends Controller
                 'profile_url' => route('students.profile', $student->id),
                 'edit_url'    => route('students.edit', $student->id),
                 'delete_url'  => route('students.destroy', $student->id),
+                'impersonate_url' => route('impersonate.start', $student->id),
             ];
         });
 
@@ -196,7 +197,7 @@ class StudentController extends Controller
             [
                 'grade_level_id' => $request->grade_level_id,
                 'stream_id' => $request->stream_id,
-                'pathway_id' => $stream->pathway_id,
+                'pathway_id' => $stream?->pathway_id,
                 'enrolled_on' => date('Y-m-d'),
             ]
         );

@@ -7,7 +7,7 @@ use Illuminate\Validation\Rule;
 
 class UpdateVoteheadRequest extends FormRequest
 {
-    public function authorize(): bool { return $this->user()?->hasPermission('fee_structures.manage') ?? false; }
+    public function authorize(): bool { return $this->user()?->hasPermission('voteheads.update') ?? false; }
 
     public function rules(): array
     {

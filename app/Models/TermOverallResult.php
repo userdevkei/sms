@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasStringId;
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TermOverallResult extends Model
 {
-    use HasStringId, softDeletes;
+    use HasStringId, softDeletes, LogsActivity;
 
     protected $fillable = [
         'id', 'student_enrollment_id', 'academic_term_id', 'total_score', 'average_score',

@@ -8,7 +8,7 @@ class StoreExpenseTransactionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasPermission('accounting.expense.manage') ?? false;
+        return $this->user()?->hasPermission('expenses.create') || $this->user()?->hasPermission('expenses.update') ?? false;
     }
 
     public function rules(): array

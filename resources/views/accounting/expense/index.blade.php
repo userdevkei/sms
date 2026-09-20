@@ -162,6 +162,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const canDelete = @json($canDelete);
+            const canUpdate = @json($canUpdate);
             const exportBaseUrl = '{{ route("accounting.expense.export") }}';
 
             $('#filterCategory, #filterYear, #filterTerm').select2({

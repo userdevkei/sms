@@ -8,7 +8,7 @@ class StoreIncomeTransactionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasPermission('accounting.income.manage') ?? false;
+        return $this->user()?->hasPermission('income.create') || $this->user()?->hasPermission('income.update') ?? false;
     }
 
     public function rules(): array

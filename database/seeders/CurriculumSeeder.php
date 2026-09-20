@@ -74,7 +74,113 @@ class CurriculumSeeder extends Seeder
         // A starter set of common learning areas — schools should complete
         // their own full subject list via the UI; this just seeds the basics
         // so the module isn't empty on first load.
-        $subjects = ['English', 'Kiswahili', 'Mathematics', 'Science and Technology', 'Social Studies', 'Religious Education'];
+
+        $subjects = [
+            // =========================
+            // PRE-PRIMARY
+            // =========================
+            'Language Activities',
+            'Mathematical Activities',
+            'Environmental Activities',
+            'Psychomotor and Creative Activities',
+            'Religious Activities',
+
+            // =========================
+            // LOWER PRIMARY - GRADE 1–3
+            // =========================
+            'English',
+            'Kiswahili',
+            'Mathematics',
+            'Environmental Activities',
+            'Creative Activities',
+            'Religious Education',
+
+            // =========================
+            // UPPER PRIMARY - GRADE 4–6
+            // =========================
+            'English',
+            'Kiswahili',
+            'Mathematics',
+            'Science and Technology',
+            'Social Studies',
+            'Agriculture',
+            'Creative Arts',
+            'Religious Education',
+            'Life Skills Education',
+
+            // =========================
+            // JUNIOR SCHOOL - GRADE 7–9
+            // =========================
+            'English',
+            'Kiswahili',
+            'Mathematics',
+            'Integrated Science',
+            'Social Studies',
+            'Business Studies',
+            'Agriculture',
+            'Computer Science',
+            'Creative Arts and Sports',
+            'Life Skills Education',
+            'Religious Education',
+            'Pre-Technical Studies',
+
+            // =========================
+            // SENIOR SCHOOL - STEM
+            // GRADE 10–12
+            // =========================
+            'Core Mathematics',
+            'Essential Mathematics',
+            'General Science',
+            'Biology',
+            'Chemistry',
+            'Physics',
+            'Agriculture',
+            'Computer Studies',
+            'Home Science',
+
+            // Technical and Applied Sciences
+            'Aviation',
+            'Building Construction',
+            'Electricity',
+            'Metalwork',
+            'Power Mechanics',
+            'Woodwork',
+            'Media Technology',
+            'Marine and Fisheries Technology',
+
+            // =========================
+            // SENIOR SCHOOL - SOCIAL SCIENCES
+            // GRADE 10–12
+            // =========================
+            'English',
+            'Literature in English',
+            'Kiswahili',
+            'Fasihi ya Kiswahili',
+            'History and Citizenship',
+            'Geography',
+            'Business Studies',
+            'Christian Religious Education',
+            'Islamic Religious Education',
+            'Hindu Religious Education',
+
+            // Languages
+            'Indigenous Languages',
+            'Arabic',
+            'French',
+            'German',
+            'Mandarin Chinese',
+            'Sign Language',
+
+            // =========================
+            // SENIOR SCHOOL - ARTS & SPORTS SCIENCE
+            // GRADE 10–12
+            // =========================
+            'Fine Arts',
+            'Music and Dance',
+            'Theatre and Film',
+            'Sports and Recreation',
+            'Physical Education',
+        ];
 
         foreach ($subjects as $subject) {
             LearningArea::query()->firstOrCreate(['name' => $subject], ['is_compulsory' => true, 'status' => 'active']);
