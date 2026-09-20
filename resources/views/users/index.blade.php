@@ -103,6 +103,10 @@
     <script>
         const usersDataUrl = @json(route('users.data'));
         const canManageUsers = @json(auth()->user()->hasPermission('users.manage'));
+        const canImpersonateUser = @json(auth()->user()->hasPermission('users.impersonate'));
+        const canViewUser = @json(auth()->user()->hasPermission('users.profile'));
+        const canDeleteUser = @json(auth()->user()->hasPermission('users.delete'));
+        const canUpdateUser  = @json(auth()->user()->hasPermission('users.update'));
     </script>
     <script src="{{ asset('js/users-index.js') }}"></script>
 @endpush

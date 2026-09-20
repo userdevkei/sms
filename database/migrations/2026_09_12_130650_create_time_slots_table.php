@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('time_slots', function (Blueprint $table) {
             $table->string('id', 12)->primary();
-            $table->string('time_slot_group_id', 12)->nullable()->after('id');
+            $table->string('time_slot_group_id', 12)->nullable();
             $table->foreign('time_slot_group_id')->references('id')->on('time_slot_groups')->cascadeOnDelete();
             $table->unsignedTinyInteger('day_of_week'); // 1=Mon ... 7=Sun
             $table->time('start_time');

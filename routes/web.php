@@ -694,7 +694,7 @@ Route::middleware('auth')->group(function () {
         });
 
     Route::post('/impersonate/stop', [ImpersonationController::class, 'stop'])->name('impersonate.stop');
-    Route::get('/impersonate/{user}', [ImpersonationController::class, 'start'])->name('impersonate.start');
+    Route::post('/impersonate/{user}', [ImpersonationController::class, 'start'])->name('impersonate.start');
 });
 
 
