@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\{AccountingReportController,
     AdminPaymentController,
     BankReconciliationController,
+    DebtorReportController,
     ExpenseCategoryController,
     ExpenseTransactionController,
     ImpersonationController,
@@ -697,6 +698,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/impersonate/{user}', [ImpersonationController::class, 'start'])->name('impersonate.start');
 });
 
+Route::prefix('finance/reports') ->name('finance.reports.')->middleware(['auth']) ->group(function () {
+        Route::get('/', [DebtorReportController::class, 'hub'])->name('index');
+
+        Route::get('debtors', [DebtorReportController::class, 'index'])->name('debtors');
+        Route::get('debtors/data', [DebtorReportController::class, 'data'])->name('debtors.data');
+        Route::get('debtors/summary', [DebtorReportController::class, 'summary'])->name('debtors.summary');
+        Route::get('debtors/export/excel', [DebtorReportController::class, 'excel'])->name('debtors.excel');
+        Route::get('debtors/export/pdf', [DebtorReportController::class, 'pdf'])->name('debtors.pdf');
+    });
 
 
 Route::post('/mpesa/callback', [MyPaymentsController::class, 'handle'])->name('mpesa.callback')->withoutMiddleware(['auth', 'verified']); // adjust to whatever middleware wraps your web routes

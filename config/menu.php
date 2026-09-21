@@ -44,6 +44,7 @@ return [
         ['label' => 'Fee Statement', 'route' => 'finance.my-statement', 'permission' => 'my-statement.view'],
         ['label' => 'Payments', 'route' => 'finance.my-payments', 'permission' => 'my-payments.view'],
         ['label' => 'Bank Reconciliation', 'route' => 'finance.bank-reconciliation.index', 'permission' => 'bank_reconciliation.view'],
+        ['label' => 'Reports', 'route' => 'finance.reports.index', 'permission' => 'reports.view'],
     ]],
 
     ['label' => 'Results', 'icon' => 'bi-journal-text', 'permission' => 'results.view', 'children' => [
