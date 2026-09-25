@@ -3,10 +3,10 @@
 return [
     ['label' => 'Dashboard', 'icon' => 'bi-speedometer2', 'route' => 'dashboard', 'permission' => null],
 
-//    ['label' => 'Admissions', 'icon' => 'bi-clipboard-check', 'permission' => 'admissions.view', 'children' => [
-//        ['label' => 'Applications', 'route' => 'admissions.index', 'permission' => 'admissions.view'],
-//        ['label' => 'New Application', 'route' => 'admissions.create', 'permission' => 'admissions.create'],
-//    ]],
+    ['label' => 'Admissions', 'icon' => 'bi-clipboard-check', 'permission' => 'admissions.view', 'children' => [
+        ['label' => 'Admissions', 'route' => 'admissions.index', 'permission' => 'admissions.view'],
+        ['label' => 'Admission Requirements', 'route' => 'admissions.requirements.index', 'permission' => 'admissions.create'],
+    ]],
 
     ['label' => 'Students', 'icon' => 'bi-people', 'permission' => 'students.view', 'children' => [
         ['label' => 'All Students', 'route' => 'students.index', 'permission' => 'students.view'],

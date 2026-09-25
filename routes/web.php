@@ -5,72 +5,22 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Http\Request;
 
-use App\Http\Controllers\{AccountingReportController,
-    AdminPaymentController,
-    BankReconciliationController,
-    DebtorReportController,
-    ExpenseCategoryController,
-    ExpenseTransactionController,
-    ImpersonationController,
-    IncomeCategoryController,
-    IncomeTransactionController,
-    LessonRequirementController,
-    LogController,
-    MyTimetableController,
-    TimeSlotController,
-    TimeSlotGroupController,
-    TimetableController,
-    VehicleController,
-    UserController,
-    TransportRouteController,
-    TermSubjectResultController,
-    TermResultCompletionController,
-    SubjectTeacherAssignmentController,
-    StudentController,
-    StreamController,
-    RouteAssignmentController,
-    RoomReservationController,
-    RoomController,
-    RoomAllocationController,
-    RoleController,
-    ReportCardPdfController,
-    ReportCardController,
-    ProgressionExceptionController,
-    ProgressionController,
-    PermissionController,
-    PathwayController,
-    PathwayClassificationController,
-    MarksEntryController,
-    LearningAreaController,
-    HostelController,
-    GradingBandController,
-    GradeLevelController,
-    EnrollmentController,
-    EducationLevelController,
-    DriverController,
-    DashboardController,
-    AssessmentTypeController,
-    AssessmentController,
-    AcademicTermController,
-    BankWebhookController,
-    ChangePasswordController,
-    EmailGatewayController,
-    MyPaymentsController,
-    MyProfileController,
-    MyResultsController,
-    MyStatementController,
-    PaymentGatewayController,
-    SmsGatewayController,
-    StudentPaymentController,
-    StudentRouteStopController,
-    VoteheadController,
-    FeeStructureController,
-    OtherChargeTypeController,
-    OtherChargeController,
-    ExemptionController,
-    InvoiceController,
-    PaymentController,
-    StudentStatementController};
+use App\Http\Controllers\{AccountingReportController, AdminPaymentController, BankReconciliationController, DebtorReportController, ExpenseCategoryController, ExpenseTransactionController, ImpersonationController, IncomeCategoryController, IncomeTransactionController, LessonRequirementController, LogController, MyTimetableController,
+    TimeSlotController, TimeSlotGroupController, TimetableController, VehicleController, UserController, TransportRouteController, TermSubjectResultController, TermResultCompletionController, SubjectTeacherAssignmentController, StudentController, StreamController, RouteAssignmentController, RoomReservationController, RoomController, RoomAllocationController, RoleController, ReportCardPdfController, ReportCardController, ProgressionExceptionController, ProgressionController, PermissionController, PathwayController, PathwayClassificationController, MarksEntryController, LearningAreaController, HostelController, GradingBandController, GradeLevelController, EnrollmentController, EducationLevelController, DriverController, DashboardController, AssessmentTypeController, AssessmentController, AcademicTermController, BankWebhookController, ChangePasswordController, EmailGatewayController, MyPaymentsController, MyProfileController, MyResultsController, MyStatementController, PaymentGatewayController, SmsGatewayController, StudentPaymentController, StudentRouteStopController, VoteheadController, FeeStructureController, OtherChargeTypeController, OtherChargeController, ExemptionController, InvoiceController, PaymentController, StudentStatementController, PublicAdmissionController, AdmissionApplicationController, AdmissionRequirementController};
+
+Route::prefix('apply')->name('apply.')->group(function () {
+    Route::get('/', [PublicAdmissionController::class, 'landing'])->name('landing');
+    Route::post('start', [PublicAdmissionController::class, 'start'])->name('start')->middleware('throttle:6,1');
+    Route::post('continue', [PublicAdmissionController::class, 'continueWithCode'])->name('continue')->middleware('throttle:10,1');
+    Route::post('resend', [PublicAdmissionController::class, 'resendCode'])->name('resend')->middleware('throttle:3,1');
+    Route::post('exit', [PublicAdmissionController::class, 'exit'])->name('exit');
+
+    Route::get('application', [PublicAdmissionController::class, 'wizard'])->name('wizard');
+    Route::post('application/{step}', [PublicAdmissionController::class, 'saveStep'])->name('save-step')->whereNumber('step');
+    Route::post('submit', [PublicAdmissionController::class, 'submit'])->name('submit');
+    Route::get('status', [PublicAdmissionController::class, 'status'])->name('status');
+    Route::get('files/{answer}', [PublicAdmissionController::class, 'file'])->name('file');
+});
 
 Route::prefix('finance')->name('finance.')->middleware(['auth', 'can:fee_structures.view'])->group(function () {
     Route::get('voteheads', [VoteheadController::class, 'index'])->name('voteheads.index');
@@ -696,6 +646,37 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/impersonate/stop', [ImpersonationController::class, 'stop'])->name('impersonate.stop');
     Route::post('/impersonate/{user}', [ImpersonationController::class, 'start'])->name('impersonate.start');
+
+    /* ---------- STAFF ---------- */
+    Route::prefix('admissions')->name('admissions.')->middleware('auth')->group(function () {
+
+        Route::middleware('can:admissions.view')->group(function () {
+            Route::get('/', [AdmissionApplicationController::class, 'index'])->name('index');
+            Route::get('data', [AdmissionApplicationController::class, 'data'])->name('data');
+            Route::get('applications/{application}', [AdmissionApplicationController::class, 'show'])->name('show');
+            Route::get('applications/{application}/files/{answer}', [AdmissionApplicationController::class, 'file'])->name('file');
+        });
+
+        Route::middleware('can:admissions.review')->group(function () {
+            Route::post('applications/{application}/approve', [AdmissionApplicationController::class, 'approve'])->name('approve');
+            Route::post('applications/{application}/request-changes', [AdmissionApplicationController::class, 'requestChanges'])->name('request-changes');
+            Route::post('applications/{application}/reject', [AdmissionApplicationController::class, 'reject'])->name('reject');
+            Route::post('applications/{application}/interview', [AdmissionApplicationController::class, 'bookInterview'])->name('interview');
+            Route::post('applications/{application}/interview-result', [AdmissionApplicationController::class, 'interviewResult'])->name('interview-result');
+        });
+
+        Route::post('applications/{application}/migrate', [AdmissionApplicationController::class, 'migrate'])
+            ->name('migrate')->middleware('can:admissions.migrate');
+
+        Route::prefix('requirements')->name('requirements.')->middleware('can:admissions.manage')->group(function () {
+            Route::get('/', [AdmissionRequirementController::class, 'index'])->name('index');
+            Route::post('/', [AdmissionRequirementController::class, 'store'])->name('store');
+            Route::put('{requirement}', [AdmissionRequirementController::class, 'update'])->name('update');
+            Route::delete('{requirement}', [AdmissionRequirementController::class, 'destroy'])->name('destroy');
+            Route::post('{requirement}/move', [AdmissionRequirementController::class, 'move'])->name('move');
+            Route::put('levels/{level}/settings', [AdmissionRequirementController::class, 'settings'])->name('settings');
+        });
+    });
 });
 
 Route::prefix('finance/reports') ->name('finance.reports.')->middleware(['auth']) ->group(function () {

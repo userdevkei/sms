@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        View::composer(['layouts.app', 'partials.navbar', 'partials.sidebar', 'partials.footer'], function ($view) {
+        View::composer(['layouts.app', 'partials.navbar', 'partials.sidebar', 'partials.footer', 'admissions.public.layout'], function ($view) {
             $view->with('appSettings', setting());
         });
 
