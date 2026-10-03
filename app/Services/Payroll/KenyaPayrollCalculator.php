@@ -81,4 +81,9 @@ class KenyaPayrollCalculator
     {
         return round((float) $v, 2);
     }
+
+    public function taxOn(float $taxable, ?array $bands = null): float
+    {
+        return $this->bandTax($taxable, $bands ?? config('kenya_payroll.paye_bands'));
+    }
 }

@@ -88,10 +88,8 @@ class WhatsappGatewayController extends Controller
 
     private function sendViaWhatsappCloud(array $config, string $destination, string $message): ?string
     {
-        $phoneNumberId = $config['phone_number_id'] ?? null;
-        $accessToken = $config['access_token'] ?? null;
-
-        Log::info($phoneNumberId, $accessToken);
+        $phoneNumberId = trim((string) ($config['phone_number_id'] ?? ''));
+        $accessToken   = trim((string) ($config['access_token'] ?? ''));
 
         abort_if(! $phoneNumberId || ! $accessToken, 422, 'WhatsApp Cloud gateway is missing its phone number ID or access token.');
 
@@ -105,6 +103,7 @@ class WhatsappGatewayController extends Controller
         // asynchronously later via webhook — so there's no reliable synchronous
         // signal to fall back on. Template is the only dependable path.
         $response = Http::withToken($accessToken)
+            ->acceptJson()
             ->post("https://graph.facebook.com/v20.0/{$phoneNumberId}/messages", [
                 'messaging_product' => 'whatsapp',
                 'to'                => $to,
@@ -116,7 +115,27 @@ class WhatsappGatewayController extends Controller
             ]);
 
         if ($response->failed()) {
-            throw new RuntimeException($response->json('error.message') ?? 'WhatsApp Cloud API request failed.');
+            $err     = $response->json('error') ?? [];
+            $code    = $err['code'] ?? null;
+            $sub     = $err['error_subcode'] ?? null;
+            $trace   = $err['fbtrace_id'] ?? null;
+            $message = $err['error_user_msg'] ?? $err['message'] ?? 'WhatsApp Cloud API request failed.';
+
+            $hint = match (true) {
+                $code === 190 && (int) $sub === 463 => 'The access token has expired. Generate a permanent System User token.',
+                $code === 190                       => 'The access token is invalid. Check it is current, has no extra spaces, and belongs to the same app as this phone number.',
+                $code === 100                       => 'The phone number ID looks wrong. Use the Phone number ID, not the WhatsApp Business Account ID.',
+                $code === 10 || $code === 200       => 'The token lacks whatsapp_business_messaging permission or access to this WhatsApp account.',
+                $code === 131030                    => 'Recipient is not on the allowed list. Add this number under API Setup while the account is in test mode.',
+                default                             => null,
+            };
+
+            throw new RuntimeException(trim(
+                $message
+                . ($code ? " (code {$code}" . ($sub ? "/{$sub}" : '') . ')' : '')
+                . ($hint ? " — {$hint}" : '')
+                . ($trace ? " [trace {$trace}]" : '')
+            ));
         }
 
         return "Credentials work. Sent via the hello_world template rather than your typed message — WhatsApp requires business-initiated messages like this to use an approved template, since the recipient hasn't messaged this number first.";

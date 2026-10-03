@@ -34,6 +34,10 @@
                 <span class="text-muted small ms-2"><i class="bi bi-calendar-event"></i> Statutory remittance due {{ $schedule->remittanceDue()->format('d M Y') }}</span>
             </div>
             <div class="d-flex gap-1 flex-wrap">
+                @unless($draft)
+                    <a href="{{ route('payroll.schedules.payslips', $schedule) }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-receipt"></i> All Payslips</a>
+                    <a href="{{ route('payroll.p9.index', ['year' => $schedule->period->year]) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-earmark-text"></i> P9 Forms</a>
+                @endunless
                 <a href="{{ route('payroll.schedules.excel', $schedule) }}" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-excel"></i> Excel</a>
                 <a href="{{ route('payroll.schedules.pdf', $schedule) }}" target="_blank" class="btn btn-sm btn-outline-danger"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
                 @if($draft)
@@ -92,6 +96,7 @@
                             <th class="num">Non-taxable</th>
                             <th class="num">Net</th>
                             <th class="pe-3">Pay via</th>
+                            <th>Pay Slip</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -130,6 +135,11 @@
                                 <td class="num js-nontax">{{ number_format($nonTax($l), 2) }}</td>
                                 <td class="num fw-bold js-net">{{ number_format($l->net_pay, 2) }}</td>
                                 <td class="pe-3"><span class="badge bg-light text-dark border">{{ strtoupper($l->payment_method) }}</span></td>
+                                <td nowrap="" class="pe-3 text-end">
+                                    @unless($draft)
+                                        <a href="{{ route('payroll.schedules.payslip', [$schedule, $l]) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Print payslip"><i class="bi bi-receipt"></i> Payslip</a>
+                                    @endunless
+                                </td>
                             </tr>
                         @empty
                             <tr><td colspan="12" class="text-center text-muted py-4">No active staff were employed in this period. Activate staff on the Staff Payees page, then Regenerate.</td></tr>
@@ -147,6 +157,7 @@
                                 <td class="num" id="tDed">{{ number_format($schedule->lines->sum($ded), 2) }}</td>
                                 <td class="num" id="tNontax">{{ number_format($schedule->lines->sum($nonTax), 2) }}</td>
                                 <td class="num" id="tNet">{{ number_format($schedule->lines->sum('net_pay'), 2) }}</td>
+                                <td class="pe-3"></td>
                                 <td class="pe-3"></td>
                             </tr>
                             </tfoot>

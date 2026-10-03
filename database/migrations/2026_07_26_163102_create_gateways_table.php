@@ -9,7 +9,7 @@ return new class extends Migration
     {
         Schema::create('gateways', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->enum('type', ['sms', 'payment', 'email']);
+            $table->enum('type', ['sms', 'payment', 'email', 'whatsapp']);
             $table->string('provider', 100); // africas_talking | custom | mpesa | bank_api | smtp
             $table->string('name', 100);
             $table->boolean('is_active')->default(false);

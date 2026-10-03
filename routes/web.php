@@ -21,6 +21,7 @@ use App\Http\Controllers\{AccountingReportController,
     MyTimetableController,
     Payroll\PaymentScheduleController,
     Payroll\PaymentScheduleExportController,
+    Payroll\PayrollDocumentController,
     Payroll\StaffPayeeController,
     TimeSlotController,
     TimeSlotGroupController,
@@ -793,6 +794,13 @@ Route::middleware('auth')->group(function () {
         Route::get('schedules/{schedule}/excel', [PaymentScheduleController::class, 'excel'])->name('schedules.excel');
 
         Route::get('schedules-export', PaymentScheduleExportController::class)->name('schedules.export');
+
+        Route::get('schedules/{schedule}/payslips', [PayrollDocumentController::class, 'payslips'])->name('schedules.payslips');
+        Route::get('schedules/{schedule}/lines/{line}/payslip', [PayrollDocumentController::class, 'payslip'])->name('schedules.payslip');
+
+        Route::get('p9', [PayrollDocumentController::class, 'p9Index'])->name('p9.index');
+        Route::get('p9/all', [PayrollDocumentController::class, 'p9All'])->name('p9.all');
+        Route::get('p9/{payee}', [PayrollDocumentController::class, 'p9'])->withTrashed()->name('p9.show');
     });
 
     Route::prefix('finance/reports') ->name('finance.reports.')->middleware(['auth']) ->group(function () {
