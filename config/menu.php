@@ -81,7 +81,7 @@ return [
         ['label' => 'Reports', 'route' => 'accounting.reports.summary', 'permission' => 'accounting.view'],
     ]],
 
-    ['label' => 'P9 Forms', 'route' => 'payroll.p9.index', 'permission' => 'payroll.view'],
+    ['label' => 'P9 Forms', 'icon' => 'bi-file-earmark-spreadsheet', 'route' => 'payroll.p9.index', 'permission' => 'payroll.view'],
 
     ['label' => 'Communication', 'icon' => 'bi-chat-dots', 'permission' => 'communication.view', 'children' => [
         ['label' => 'Send Message', 'route' => 'communication.compose', 'permission' => 'communication.send'],
