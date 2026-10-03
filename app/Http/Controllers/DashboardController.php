@@ -516,6 +516,7 @@ class DashboardController extends Controller
             'smsGateways'     => \App\Models\Gateway::where('type', 'sms')->with('credentials')->latest('created_at')->get(),
             'paymentGateways' => \App\Models\Gateway::where('type', 'payment')->with('credentials')->latest('created_at')->get(),
             'emailGateways'   => \App\Models\Gateway::where('type', 'email')->with('credentials')->latest('created_at')->get(),
+            'whatsappGateways'   => \App\Models\Gateway::where('type', 'whatsapp')->with('credentials')->latest('created_at')->get(),
         ]);
     }
 

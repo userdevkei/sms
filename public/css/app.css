@@ -331,6 +331,12 @@ body {
 h1.h4.mb-0 {
     font-size: 1.1rem !important;
 }
+h4.mb-0 {
+    font-size: 1.1rem !important;
+}
+h4.mb-3 {
+    font-size: 1.1rem !important;
+}
 .text-muted.mb-0 {
     font-size: 0.85rem !important;
 }

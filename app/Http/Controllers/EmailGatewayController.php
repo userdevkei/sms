@@ -6,6 +6,11 @@ use App\Http\Requests\StoreEmailGatewayRequest;
 use App\Models\Gateway;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Mail\GatewayTestMail;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Validation\ValidationException;
 
 class EmailGatewayController extends Controller
 {
@@ -75,5 +80,52 @@ class EmailGatewayController extends Controller
         $emailGateway->delete();
 
         return response()->json(['success' => true, 'message' => 'Email gateway deleted.']);
+    }
+
+    public function test(Request $request, Gateway $emailGateway): JsonResponse
+    {
+        abort_unless($request->user()?->hasPermission('settings.manage'), 403);
+        abort_unless($emailGateway->type === 'email', 404);
+
+        try {
+            $request->validate(['destination' => ['required', 'email']]);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->validator->errors()->first('destination')], 422);
+        }
+
+        $cfg = $emailGateway->config();
+
+        // Register a one-off mailer using THIS gateway's stored credentials, rather
+        // than whatever is active in config/mail.php — lets you test a gateway
+        // before activating it, same as the SMS/WhatsApp test buttons will.
+        Config::set('mail.mailers.gateway_test', [
+            'transport'  => 'smtp',
+            'host'       => $cfg['host'],
+            'port'       => (int) $cfg['port'],
+            'encryption' => $cfg['encryption'] === 'none' ? null : $cfg['encryption'],
+            'username'   => $cfg['username'],
+            'password'   => $cfg['password'],
+            'timeout'    => 15,
+        ]);
+
+        Config::set('mail.from', [
+            'address' => $cfg['from_address'],
+            'name'    => $cfg['from_name'],
+        ]);
+
+        try {
+            Mail::mailer('gateway_test')
+                ->to($request->input('destination'))
+                ->send(new GatewayTestMail($emailGateway->name, $request->input('message')));
+
+            return response()->json(['success' => true, 'message' => "Test email sent to {$request->input('destination')}."]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Send failed: ' . $e->getMessage(),
+            ], 422);
+        }
     }
 }

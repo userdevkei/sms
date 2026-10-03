@@ -140,5 +140,8 @@ class User extends Authenticatable
         return $this->hasMany(Invoice::class);
     }
 
-
+    public function payments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
 }

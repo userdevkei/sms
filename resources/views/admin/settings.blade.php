@@ -19,6 +19,11 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#whatsapp-pane" type="button">
+                <i class="bi bi-whatsapp me-1"></i> WhatsApp Gateway
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#payment-pane" type="button">
                 <i class="bi bi-credit-card me-1"></i> Payment Gateway
             </button>
@@ -166,7 +171,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table {{--id="smsGatewaysTable"--}} class="table table-hover table-sm table-striped fs-sm w-100">
+                        <table class="table table-hover table-sm table-striped fs-sm w-100">
                             <thead><tr><th>Name</th><th>Provider</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
                             <tbody>
                             @forelse($smsGateways as $gw)
@@ -181,6 +186,9 @@
                                         @endif
                                     </td>
                                     <td class="text-end">
+                                        <button type="button" class="btn btn-sm btn-outline-info me-1 btn-test-sms" data-id="{{ $gw->id }}" data-name="{{ $gw->name }}" title="Send test SMS">
+                                            <i class="bi bi-send-check"></i>
+                                        </button>
                                         @unless($gw->is_active)
                                             <button type="button" class="btn btn-sm btn-outline-success me-1" onclick="activateGateway('sms', '{{ $gw->id }}')">
                                                 <i class="bi bi-check-circle"></i> Activate
@@ -199,6 +207,62 @@
                                 </tr>
                             @empty
                                 <tr><td colspan="4" class="text-center text-muted py-3">No SMS gateways configured.</td></tr>
+                            @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ============ WHATSAPP GATEWAY ============ --}}
+        <div class="tab-pane fade" id="whatsapp-pane" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="text-muted mb-0">Only one WhatsApp gateway is active at a time — it's used for every outgoing WhatsApp message.</p>
+                <button type="button" class="btn btn-sm btn-primary" onclick="openWhatsappModal()">
+                    <i class="bi bi-plus-lg me-1"></i> Add WhatsApp Gateway
+                </button>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm table-striped fs-sm w-100">
+                            <thead><tr><th>Name</th><th>Provider</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                            <tbody>
+                            @forelse($whatsappGateways as $gw)
+                                <tr>
+                                    <td class="fw-semibold">{{ $gw->name }}</td>
+                                    <td class="text-capitalize">{{ str_replace('_', ' ', $gw->provider) }}</td>
+                                    <td>
+                                        @if($gw->is_active)
+                                            <span class="badge bg-success-subtle text-success">Active</span>
+                                        @else
+                                            <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-end">
+                                        <button type="button" class="btn btn-sm btn-outline-info me-1 btn-test-whatsapp" data-id="{{ $gw->id }}" data-name="{{ $gw->name }}" title="Send test WhatsApp message">
+                                            <i class="bi bi-send-check"></i>
+                                        </button>
+                                        @unless($gw->is_active)
+                                            <button type="button" class="btn btn-sm btn-outline-success me-1" onclick="activateGateway('whatsapp', '{{ $gw->id }}')">
+                                                <i class="bi bi-check-circle"></i> Activate
+                                            </button>
+                                        @endunless
+                                        <button type="button" class="btn btn-sm btn-outline-primary me-1 btn-edit-whatsapp"
+                                                data-config="{{ json_encode(array_merge($gw->only(['id', 'provider', 'name']), $gw->config())) }}">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        @unless($gw->is_active)
+                                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteGateway('whatsapp', '{{ $gw->id }}')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        @endunless
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="4" class="text-center text-muted py-3">No WhatsApp gateways configured.</td></tr>
                             @endforelse
                             </tbody>
                         </table>
@@ -272,7 +336,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table {{--id="emailGatewaysTable" --}}class="table table-hover table-sm table-striped fs-sm w-100">
+                        <table class="table table-hover table-sm table-striped fs-sm w-100">
                             <thead><tr><th>Name</th><th>Host</th><th>From Address</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
                             <tbody>
                             @forelse($emailGateways as $gw)
@@ -289,6 +353,9 @@
                                         @endif
                                     </td>
                                     <td class="text-end">
+                                        <button type="button" class="btn btn-sm btn-outline-info me-1 btn-test-email" data-id="{{ $gw->id }}" data-name="{{ $gw->name }}" title="Send test email">
+                                            <i class="bi bi-send-check"></i>
+                                        </button>
                                         @unless($gw->is_active)
                                             <button type="button" class="btn btn-sm btn-outline-success me-1" onclick="activateGateway('email', '{{ $gw->id }}')">
                                                 <i class="bi bi-check-circle"></i> Activate
@@ -322,7 +389,7 @@
         <div class="modal-dialog">
             <form method="POST" id="smsForm" action="{{ route('settings.sms-gateways.store') }}">
                 @csrf
-                <div id="smsMethodField"></div>
+                <input type="hidden" name="_method" id="smsMethodField" value="">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="smsModalTitle">Add SMS Gateway</h5>
@@ -337,6 +404,7 @@
                             <label class="form-label">Provider <span class="text-danger">*</span></label>
                             <select name="provider" id="sms_provider" class="form-select" required onchange="toggleSmsProviderFields()">
                                 <option value="africas_talking">Africa's Talking</option>
+                                <option value="twilio">Twilio</option>
                                 <option value="custom">Custom (API Endpoint)</option>
                             </select>
                         </div>
@@ -354,6 +422,23 @@
                             <div class="mb-2">
                                 <label class="form-label">Sender ID</label>
                                 <input type="text" name="sender_id" id="sms_sender_id" class="form-control">
+                            </div>
+                        </div>
+
+                        <div id="sms_twilio_fields" class="d-none">
+                            <div class="mb-2">
+                                <label class="form-label">Account SID <span class="text-danger">*</span></label>
+                                <input type="text" name="account_sid" id="sms_twilio_account_sid" class="form-control">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Auth Token <span class="text-danger">*</span></label>
+                                <input type="password" name="auth_token" id="sms_twilio_auth_token" class="form-control" autocomplete="new-password">
+                                <small class="text-muted" id="sms_twilio_auth_token_hint"></small>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">From (Twilio SMS-capable number) <span class="text-danger">*</span></label>
+                                <input type="text" name="from" id="sms_twilio_from" class="form-control" placeholder="+15005550006">
+                                <small class="text-muted">For sandbox testing, use Twilio's test/trial number here.</small>
                             </div>
                         </div>
 
@@ -378,12 +463,104 @@
         </div>
     </div>
 
+    {{-- ============ WHATSAPP GATEWAY MODAL ============ --}}
+    <div class="modal fade" id="whatsappModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form method="POST" id="whatsappForm" action="{{ route('settings.whatsapp-gateways.store') }}">
+                @csrf
+                <input type="hidden" name="_method" id="whatsappMethodField" value="">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="whatsappModalTitle">Add WhatsApp Gateway</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-2">
+                            <label class="form-label">Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" id="whatsapp_name" class="form-control" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Provider <span class="text-danger">*</span></label>
+                            <select name="provider" id="whatsapp_provider" class="form-select" required onchange="toggleWhatsappProviderFields()">
+                                <option value="whatsapp_cloud">WhatsApp Cloud API (Meta)</option>
+                                <option value="twilio">Twilio (sandbox or WhatsApp-enabled number)</option>
+                                <option value="custom">Custom (API Endpoint)</option>
+                            </select>
+                        </div>
+
+                        {{-- ---- WHATSAPP CLOUD API (META) ---- --}}
+                        <div id="whatsapp_whatsapp_cloud_fields">
+                            <div class="mb-2">
+                                <label class="form-label">Phone Number ID <span class="text-danger">*</span></label>
+                                <input type="text" name="phone_number_id" id="whatsapp_cloud_phone_number_id" class="form-control">
+                                <small class="text-muted">From Meta Business Suite → WhatsApp → API Setup.</small>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">WhatsApp Business Account ID</label>
+                                <input type="text" name="business_account_id" id="whatsapp_cloud_business_account_id" class="form-control">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Access Token <span class="text-danger">*</span></label>
+                                <input type="password" name="access_token" id="whatsapp_cloud_access_token" class="form-control" autocomplete="new-password">
+                                <small class="text-muted" id="whatsapp_cloud_access_token_hint">A permanent token from a System User, not the 24-hour temporary token.</small>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Webhook Verify Token</label>
+                                <input type="text" name="verify_token" id="whatsapp_cloud_verify_token" class="form-control">
+                                <small class="text-muted">You choose this value yourself and enter the same one in Meta's webhook setup.</small>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Webhook Callback URL (register this with Meta)</label>
+                                <input type="url" class="form-control" value="{{ route('webhooks.whatsapp.cloud') }}" readonly>
+                            </div>
+                        </div>
+
+                        {{-- ---- TWILIO ---- --}}
+                        <div id="whatsapp_twilio_fields" class="d-none">
+                            <div class="mb-2">
+                                <label class="form-label">Account SID <span class="text-danger">*</span></label>
+                                <input type="text" name="account_sid" id="whatsapp_twilio_account_sid" class="form-control">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Auth Token <span class="text-danger">*</span></label>
+                                <input type="password" name="auth_token" id="whatsapp_twilio_auth_token" class="form-control" autocomplete="new-password">
+                                <small class="text-muted" id="whatsapp_twilio_auth_token_hint"></small>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">From (WhatsApp-enabled number) <span class="text-danger">*</span></label>
+                                <input type="text" name="from" id="whatsapp_twilio_from" class="form-control" placeholder="+14155238886">
+                                <small class="text-muted">Twilio's sandbox number works here for testing — sent with the whatsapp: prefix automatically, don't include it yourself.</small>
+                            </div>
+                        </div>
+
+                        {{-- ---- CUSTOM ---- --}}
+                        <div id="whatsapp_custom_fields" class="d-none">
+                            <div class="mb-2">
+                                <label class="form-label">Endpoint URL <span class="text-danger">*</span></label>
+                                <input type="url" name="endpoint_url" id="whatsapp_custom_endpoint_url" class="form-control">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">API Key</label>
+                                <input type="password" name="api_key" id="whatsapp_custom_api_key" class="form-control" autocomplete="new-password">
+                                <small class="text-muted" id="whatsapp_custom_api_key_hint"></small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {{-- ============ PAYMENT GATEWAY MODAL ============ --}}
     <div class="modal fade" id="paymentModal" tabindex="-1">
         <div class="modal-dialog">
             <form method="POST" id="paymentForm" action="{{ route('settings.payment-gateways.store') }}">
                 @csrf
-                <div id="paymentMethodField"></div>
+                <input type="hidden" name="_method" id="paymentMethodField" value="">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="paymentModalTitle">Add Payment Gateway</h5>
@@ -553,7 +730,7 @@
         <div class="modal-dialog">
             <form method="POST" id="emailForm" action="{{ route('settings.email-gateways.store') }}">
                 @csrf
-                <div id="emailMethodField"></div>
+                <input type="hidden" name="_method" id="emailMethodField" value="">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="emailModalTitle">Add Email Gateway</h5>
@@ -576,7 +753,7 @@
                         </div>
                         <div class="mb-2 mt-2">
                             <label class="form-label">Username <span class="text-danger">*</span></label>
-                            <input type="text" name="username" id="email_username" class="form-control">
+                            <input type="text" name="username" id="email_username" class="form-control" autocomplete="username">
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Password</label>
@@ -606,6 +783,51 @@
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+
+    {{-- ============ SHARED TEST-GATEWAY MODAL (SMS / WhatsApp / Email) ============ --}}
+    <div class="modal fade" id="testGatewayModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="testGatewayTitle">Send Test</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {{--
+                        FIX (was crashing, twice): #testGatewayAlert used to be
+                        server-rendered here — first as a div holding only "&nbsp;",
+                        then as a div holding an empty <span>. Both got stripped from
+                        the response by whatever is minifying the HTML: it appears to
+                        remove empty elements recursively (empty span removed first,
+                        which then leaves the div empty too, so it gets removed on a
+                        second pass). Any markup-only trick is fragile against that.
+
+                        Real fix: stop depending on server-rendered markup for this
+                        element. It's now created in JS at runtime by
+                        getTestGatewayAlert() (see script below), which only ever
+                        touches the live DOM — nothing server-side can strip it.
+                    --}}
+                    <p class="text-muted small mb-3" id="testGatewaySubtitle"></p>
+
+                    <div class="mb-2">
+                        <label class="form-label" id="testGatewayDestinationLabel">Destination</label>
+                        <input type="text" id="testGatewayDestination" class="form-control" placeholder="">
+                    </div>
+                    <div class="mb-0" id="testGatewayMessageWrap">
+                        <label class="form-label">Message</label>
+                        <textarea id="testGatewayMessage" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-sm btn-primary" id="testGatewaySubmit" onclick="submitTestGateway()">
+                        <span id="testGatewaySubmitLabel">Send Test</span>
+                        <span class="spinner-border spinner-border-sm d-none" id="testGatewaySpinner"></span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -646,7 +868,7 @@
             bindPreview('favicon-input', 'favicon-preview', 'favicon-placeholder-icon');
         });
 
-        ['smsGatewaysTable', 'paymentGatewaysTable', 'emailGatewaysTable'].forEach(id => {
+        ['paymentGatewaysTable'].forEach(id => {
             if (document.getElementById(id)) {
                 $('#' + id).DataTable({ order: [[0, 'asc']], pageLength: 10, columnDefs: [{ targets: -1, orderable: false }] });
             }
@@ -655,23 +877,56 @@
         const routes = {
             smsStore: @json(route('settings.sms-gateways.store')),
             smsUpdate: id => @json(route('settings.sms-gateways.update', ['smsGateway' => '__ID__'])).replace('__ID__', id),
+            whatsappStore: @json(route('settings.whatsapp-gateways.store')),
+            whatsappUpdate: id => @json(route('settings.whatsapp-gateways.update', ['whatsappGateway' => '__ID__'])).replace('__ID__', id),
+            whatsappActivate: id => @json(route('settings.whatsapp-gateways.activate', ['whatsappGateway' => '__ID__'])).replace('__ID__', id),
+            whatsappDestroy: id => @json(route('settings.whatsapp-gateways.destroy', ['whatsappGateway' => '__ID__'])).replace('__ID__', id),
             paymentStore: @json(route('settings.payment-gateways.store')),
             paymentUpdate: id => @json(route('settings.payment-gateways.update', ['paymentGateway' => '__ID__'])).replace('__ID__', id),
             emailStore: @json(route('settings.email-gateways.store')),
             emailUpdate: id => @json(route('settings.email-gateways.update', ['emailGateway' => '__ID__'])).replace('__ID__', id),
-            // NOT YET CONFIRMED — guessed URI pattern. Paste your actual route
-            // list for activate/destroy and I will fix these two lines.
-            activate: (type, id) => `/settings/${type}-gateways/${id}/activate`,
-            destroy: (type, id) => `/settings/${type}-gateways/${id}`,
+
+            // TODO (backend): sms/payment activate+destroy still guessed string paths,
+            // not real route() calls — paste `php artisan route:list` filtered to
+            // "sms-gateways" and "payment-gateways" and these will get fixed properly.
+            activate: (type, id) => type === 'whatsapp' ? routes.whatsappActivate(id) : `/settings/${type}-gateways/${id}/activate`,
+            destroy: (type, id) => type === 'whatsapp' ? routes.whatsappDestroy(id) : `/settings/${type}-gateways/${id}`,
+
+            // TODO (backend): SMS test is still a guessed string path, no
+            // controller/route behind it yet — do the same thing for it that was
+            // just done for WhatsApp (mirroring settings.email-gateways.test).
+            testGateway: (channel, id) => {
+                const map = {
+                    sms:      '/settings/sms-gateways/__ID__/test',  // NOT YET WIRED
+                    whatsapp: @json(route('settings.whatsapp-gateways.test', ['whatsappGateway' => '__ID__'])),
+                    email:    @json(route('settings.email-gateways.test', ['emailGateway' => '__ID__'])),
+                };
+                return map[channel].replace('__ID__', id);
+            },
         };
 
-        // Payment providers that share one visible fieldset each, keyed by provider value.
+        const SMS_PROVIDER_FIELDSETS = ['africas_talking', 'twilio', 'custom'];
+        const WHATSAPP_PROVIDER_FIELDSETS = ['whatsapp_cloud', 'twilio', 'custom'];
         const PAYMENT_PROVIDER_FIELDSETS = ['mpesa', 'equity', 'kcb', 'coop'];
 
         function toggleSmsProviderFields() {
-            const isAt = document.getElementById('sms_provider').value === 'africas_talking';
-            document.getElementById('sms_africas_talking_fields').classList.toggle('d-none', !isAt);
-            document.getElementById('sms_custom_fields').classList.toggle('d-none', isAt);
+            const provider = document.getElementById('sms_provider').value;
+            SMS_PROVIDER_FIELDSETS.forEach(p => {
+                const fieldset = document.getElementById('sms_' + p + '_fields');
+                const isActive = p === provider;
+                fieldset.classList.toggle('d-none', !isActive);
+                fieldset.querySelectorAll('input, select, textarea').forEach(el => { el.disabled = !isActive; });
+            });
+        }
+
+        function toggleWhatsappProviderFields() {
+            const provider = document.getElementById('whatsapp_provider').value;
+            WHATSAPP_PROVIDER_FIELDSETS.forEach(p => {
+                const fieldset = document.getElementById('whatsapp_' + p + '_fields');
+                const isActive = p === provider;
+                fieldset.classList.toggle('d-none', !isActive);
+                fieldset.querySelectorAll('input, select, textarea').forEach(el => { el.disabled = !isActive; });
+            });
         }
 
         function togglePaymentProviderFields() {
@@ -694,24 +949,53 @@
         function openSmsModal(data) {
             const form = document.getElementById('smsForm');
             const isEdit = !!data;
+            const provider = data?.provider ?? 'africas_talking';
+            const hint = isEdit ? 'Leave blank to keep the current value.' : '';
+
             document.getElementById('smsModalTitle').textContent = isEdit ? 'Edit SMS Gateway' : 'Add SMS Gateway';
             form.action = isEdit ? routes.smsUpdate(data.id) : routes.smsStore;
-            document.getElementById('smsMethodField').innerHTML = isEdit ? '@method('PATCH')' : '';
+            document.getElementById('smsMethodField').value = isEdit ? 'PATCH' : '';
 
             document.getElementById('sms_name').value = data?.name ?? '';
-            document.getElementById('sms_provider').value = data?.provider ?? 'africas_talking';
+            document.getElementById('sms_provider').value = provider;
             document.getElementById('sms_username').value = data?.username ?? '';
             document.getElementById('sms_sender_id').value = data?.sender_id ?? '';
+            document.getElementById('sms_twilio_account_sid').value = data?.account_sid ?? '';
+            document.getElementById('sms_twilio_from').value = data?.from ?? '';
             document.getElementById('sms_endpoint_url').value = data?.endpoint_url ?? '';
-            document.getElementById('sms_api_key_at').value = '';
-            document.getElementById('sms_api_key_custom').value = '';
 
-            const hint = isEdit ? 'Leave blank to keep the current key.' : '';
-            document.getElementById('sms_api_key_at_hint').textContent = hint;
-            document.getElementById('sms_api_key_custom_hint').textContent = hint;
+            ['sms_api_key_at', 'sms_twilio_auth_token', 'sms_api_key_custom'].forEach(id => { document.getElementById(id).value = ''; });
+            ['sms_api_key_at_hint', 'sms_twilio_auth_token_hint', 'sms_api_key_custom_hint'].forEach(id => { document.getElementById(id).textContent = hint; });
 
             toggleSmsProviderFields();
             new bootstrap.Modal(document.getElementById('smsModal')).show();
+        }
+
+        function openWhatsappModal(data) {
+            const form = document.getElementById('whatsappForm');
+            const isEdit = !!data;
+            const provider = data?.provider ?? 'whatsapp_cloud';
+            const hint = isEdit ? 'Leave blank to keep the current value.' : '';
+
+            document.getElementById('whatsappModalTitle').textContent = isEdit ? 'Edit WhatsApp Gateway' : 'Add WhatsApp Gateway';
+            form.action = isEdit ? routes.whatsappUpdate(data.id) : routes.whatsappStore;
+            document.getElementById('whatsappMethodField').value = isEdit ? 'PATCH' : '';
+
+            document.getElementById('whatsapp_name').value = data?.name ?? '';
+            document.getElementById('whatsapp_provider').value = provider;
+
+            document.getElementById('whatsapp_cloud_phone_number_id').value = data?.phone_number_id ?? '';
+            document.getElementById('whatsapp_cloud_business_account_id').value = data?.business_account_id ?? '';
+            document.getElementById('whatsapp_cloud_verify_token').value = data?.verify_token ?? '';
+            document.getElementById('whatsapp_twilio_account_sid').value = data?.account_sid ?? '';
+            document.getElementById('whatsapp_twilio_from').value = data?.from ?? '';
+            document.getElementById('whatsapp_custom_endpoint_url').value = data?.endpoint_url ?? '';
+
+            ['whatsapp_cloud_access_token', 'whatsapp_twilio_auth_token', 'whatsapp_custom_api_key'].forEach(id => { document.getElementById(id).value = ''; });
+            ['whatsapp_cloud_access_token_hint', 'whatsapp_twilio_auth_token_hint', 'whatsapp_custom_api_key_hint'].forEach(id => { document.getElementById(id).textContent = hint; });
+
+            toggleWhatsappProviderFields();
+            new bootstrap.Modal(document.getElementById('whatsappModal')).show();
         }
 
         function openPaymentModal(data) {
@@ -722,13 +1006,11 @@
 
             document.getElementById('paymentModalTitle').textContent = isEdit ? 'Edit Payment Gateway' : 'Add Payment Gateway';
             form.action = isEdit ? routes.paymentUpdate(data.id) : routes.paymentStore;
-            document.getElementById('paymentMethodField').innerHTML = isEdit ? '@method('PATCH')' : '';
+            document.getElementById('paymentMethodField').value = isEdit ? 'PATCH' : '';
 
             document.getElementById('payment_name').value = data?.name ?? '';
             document.getElementById('payment_provider').value = provider;
 
-            // Reset every secret field across all providers, then repopulate
-            // non-secret fields for the active provider only.
             [
                 'payment_mpesa_consumer_key', 'payment_mpesa_consumer_secret', 'payment_mpesa_passkey',
                 'payment_equity_ipn_password',
@@ -752,7 +1034,6 @@
 
             document.getElementById('payment_kcb_environment').value = data?.environment ?? 'sandbox';
             document.getElementById('payment_kcb_account_number').value = data?.account_number ?? '';
-            // Public key, not a secret — safe to populate directly on edit.
             document.getElementById('payment_kcb_public_key').value = data?.kcb_public_key ?? '';
 
             document.getElementById('payment_coop_environment').value = data?.environment ?? 'sandbox';
@@ -767,7 +1048,7 @@
             const isEdit = !!data;
             document.getElementById('emailModalTitle').textContent = isEdit ? 'Edit Email Gateway' : 'Add Email Gateway';
             form.action = isEdit ? routes.emailUpdate(data.id) : routes.emailStore;
-            document.getElementById('emailMethodField').innerHTML = isEdit ? '@method('PATCH')' : '';
+            document.getElementById('emailMethodField').value = isEdit ? 'PATCH' : '';
 
             document.getElementById('email_name').value = data?.name ?? '';
             document.getElementById('email_host').value = data?.host ?? '';
@@ -798,9 +1079,124 @@
             }).then(r => r.json()).then(res => res.success ? location.reload() : alert(res.message));
         }
 
+        // ---- Test-gateway modal (shared across sms / whatsapp / email) ----
+        let testGatewayState = { channel: null, id: null };
+
+        function getTestGatewayAlert() {
+            let alertBox = document.getElementById('testGatewayAlert');
+            if (alertBox) return alertBox;
+
+            // Server-rendered markup for this element keeps getting stripped by
+            // whatever minifies the HTML response (it removes empty elements,
+            // recursively). Build it at runtime instead — JS runs after
+            // minification, so nothing server-side can touch it here.
+            alertBox = document.createElement('div');
+            alertBox.id = 'testGatewayAlert';
+            alertBox.className = 'alert d-none';
+            alertBox.setAttribute('role', 'alert');
+
+            const modalBody = document.querySelector('#testGatewayModal .modal-body');
+            if (modalBody) {
+                modalBody.prepend(alertBox);
+            }
+            // If modalBody is also missing, alertBox stays detached (won't be
+            // visible on screen) but still exists as an object, so nothing
+            // downstream throws trying to set its className/textContent.
+            return alertBox;
+        }
+
+        const TEST_MODAL_CONFIG = {
+            sms:      { title: 'Send Test SMS',              label: 'Phone number', placeholder: '0712 345 678', hasMessage: true },
+            whatsapp: { title: 'Send Test WhatsApp Message',  label: 'Phone number', placeholder: '0712 345 678', hasMessage: true },
+            email:    { title: 'Send Test Email',             label: 'Email address', placeholder: 'you@example.com', hasMessage: false },
+        };
+
+        function openTestModal(channel, id, name) {
+            testGatewayState = { channel, id };
+            const cfg = TEST_MODAL_CONFIG[channel];
+            const alertBox = getTestGatewayAlert();
+
+            document.getElementById('testGatewayTitle').textContent = cfg.title;
+            document.getElementById('testGatewaySubtitle').textContent = 'Testing gateway: ' + name;
+            document.getElementById('testGatewayDestinationLabel').textContent = cfg.label;
+            document.getElementById('testGatewayDestination').placeholder = cfg.placeholder;
+            document.getElementById('testGatewayDestination').value = '';
+            document.getElementById('testGatewayMessageWrap').classList.toggle('d-none', !cfg.hasMessage);
+            document.getElementById('testGatewayMessage').value = cfg.hasMessage ? ('This is a test message from ' + name + '.') : '';
+
+            alertBox.className = 'alert d-none';
+            alertBox.textContent = '';
+
+            new bootstrap.Modal(document.getElementById('testGatewayModal')).show();
+        }
+
+        function submitTestGateway() {
+            const { channel, id } = testGatewayState;
+            const destinationEl = document.getElementById('testGatewayDestination');
+            const messageEl = document.getElementById('testGatewayMessage');
+            const alertBox = getTestGatewayAlert();
+            const submitBtn = document.getElementById('testGatewaySubmit');
+            const spinner = document.getElementById('testGatewaySpinner');
+            const label = document.getElementById('testGatewaySubmitLabel');
+
+            // Defensive guard: if any expected element is missing, fail with a
+            // clear message instead of a cryptic "Cannot set properties of null".
+            // (alertBox itself can no longer be null — getTestGatewayAlert() always
+            // returns an element — but the rest are still worth checking.)
+            if (!submitBtn || !spinner || !label || !destinationEl || !messageEl) {
+                console.error('testGatewayModal: expected element missing from DOM', { submitBtn, spinner, label, destinationEl, messageEl });
+                alert('Something went wrong with the test dialog — please reload the page and try again.');
+                return;
+            }
+
+            const destination = destinationEl.value.trim();
+            const message = messageEl.value.trim();
+
+            if (!destination) {
+                alertBox.className = 'alert alert-warning';
+                alertBox.textContent = 'Please enter a destination.';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            spinner.classList.remove('d-none');
+            label.textContent = 'Sending…';
+            alertBox.className = 'alert d-none';
+
+            fetch(routes.testGateway(channel, id), {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': @json(csrf_token()),
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ destination, message }),
+            })
+                .then(r => r.json())
+                .then(res => {
+                    alertBox.className = 'alert ' + (res.success ? 'alert-success' : 'alert-danger');
+                    alertBox.textContent = res.message ?? (res.success ? 'Test sent.' : 'Test failed.');
+                })
+                .catch(() => {
+                    alertBox.className = 'alert alert-danger';
+                    alertBox.textContent = 'Request failed — check your connection and try again.';
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    spinner.classList.add('d-none');
+                    label.textContent = 'Send Test';
+                });
+        }
+
         document.querySelectorAll('.btn-edit-sms').forEach(btn => {
             btn.addEventListener('click', function () {
                 openSmsModal(JSON.parse(this.dataset.config));
+            });
+        });
+
+        document.querySelectorAll('.btn-edit-whatsapp').forEach(btn => {
+            btn.addEventListener('click', function () {
+                openWhatsappModal(JSON.parse(this.dataset.config));
             });
         });
 
@@ -813,6 +1209,24 @@
         document.querySelectorAll('.btn-edit-email').forEach(btn => {
             btn.addEventListener('click', function () {
                 openEmailModal(JSON.parse(this.dataset.config));
+            });
+        });
+
+        document.querySelectorAll('.btn-test-sms').forEach(btn => {
+            btn.addEventListener('click', function () {
+                openTestModal('sms', this.dataset.id, this.dataset.name);
+            });
+        });
+
+        document.querySelectorAll('.btn-test-whatsapp').forEach(btn => {
+            btn.addEventListener('click', function () {
+                openTestModal('whatsapp', this.dataset.id, this.dataset.name);
+            });
+        });
+
+        document.querySelectorAll('.btn-test-email').forEach(btn => {
+            btn.addEventListener('click', function () {
+                openTestModal('email', this.dataset.id, this.dataset.name);
             });
         });
     </script>

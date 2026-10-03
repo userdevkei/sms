@@ -12,6 +12,7 @@ use App\Models\EducationLevel;
 use App\Models\GradeLevel;
 use App\Services\Admissions\AdmissionCodeService;
 use App\Services\Admissions\AdmissionNotifier;
+use App\Services\Communication\Notifier;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -27,7 +28,7 @@ class PublicAdmissionController extends Controller
 
     public function __construct(
         private AdmissionCodeService $codes,
-        private AdmissionNotifier $notifier,
+        private Notifier $notifier,
     ) {}
 
     /* ==================================================================

@@ -70,14 +70,21 @@ return [
         ['label' => 'Room Allocations', 'route' => 'accommodation.allocations.index', 'permission' => 'accommodation.view'],
     ]],
 
-//    ['label' => 'HR', 'icon' => 'bi-person-badge', 'route' => 'hr.index', 'permission' => 'hr.view'],
     ['label' => 'Accounting', 'icon' => 'bi-calculator', 'permission' => 'accounting.view', 'children' => [
         ['label' => 'Overview', 'route' => 'accounting.index', 'permission' => 'accounting.view'],
         ['label' => 'Income', 'route' => 'accounting.income.index', 'permission' => 'income.view'],
         ['label' => 'Expenses', 'route' => 'accounting.expense.index', 'permission' => 'expenses.view'],
         ['label' => 'Income Categories', 'route' => 'accounting.income-categories.index', 'permission' => 'income.categories.manage'],
         ['label' => 'Expense Categories', 'route' => 'accounting.expense-categories.index', 'permission' => 'expense.categories.manage'],
+        ['label' => 'Staff Payees', 'route' => 'payroll.payees.index', 'permission' => 'payroll.manage'],
+        ['label' => 'Payment Schedules', 'route' => 'payroll.schedules.index', 'permission' => 'payroll.view'],
         ['label' => 'Reports', 'route' => 'accounting.reports.summary', 'permission' => 'accounting.view'],
+    ]],
+
+    ['label' => 'Communication', 'icon' => 'bi-chat-dots', 'permission' => 'communication.view', 'children' => [
+        ['label' => 'Send Message', 'route' => 'communication.compose', 'permission' => 'communication.send'],
+        ['label' => 'Sent & Scheduled', 'route' => 'communication.index', 'permission' => 'communication.view'],
+        ['label' => 'Templates', 'route' => 'communication.templates.index', 'permission' => 'communication.templates.manage'],
     ]],
 
     ['label' => 'Administration', 'icon' => 'bi-gear', 'permission' => 'admin.view', 'children' => [

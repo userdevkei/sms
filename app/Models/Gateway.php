@@ -50,4 +50,13 @@ class Gateway extends Model
             $this->credentials()->updateOrCreate(['key' => $key], ['value' => $value]);
         }
     }
+
+    public static function activeForType(string $type): ?self
+    {
+        return static::query()
+            ->where('type', $type)          // 'email' | 'sms' | 'whatsapp'
+            ->where('is_active', true)
+            ->with('credentials')
+            ->first();
+    }
 }

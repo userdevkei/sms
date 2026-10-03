@@ -5,8 +5,80 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Http\Request;
 
-use App\Http\Controllers\{AccountingReportController, AdminPaymentController, BankReconciliationController, DebtorReportController, ExpenseCategoryController, ExpenseTransactionController, ImpersonationController, IncomeCategoryController, IncomeTransactionController, LessonRequirementController, LogController, MyTimetableController,
-    TimeSlotController, TimeSlotGroupController, TimetableController, VehicleController, UserController, TransportRouteController, TermSubjectResultController, TermResultCompletionController, SubjectTeacherAssignmentController, StudentController, StreamController, RouteAssignmentController, RoomReservationController, RoomController, RoomAllocationController, RoleController, ReportCardPdfController, ReportCardController, ProgressionExceptionController, ProgressionController, PermissionController, PathwayController, PathwayClassificationController, MarksEntryController, LearningAreaController, HostelController, GradingBandController, GradeLevelController, EnrollmentController, EducationLevelController, DriverController, DashboardController, AssessmentTypeController, AssessmentController, AcademicTermController, BankWebhookController, ChangePasswordController, EmailGatewayController, MyPaymentsController, MyProfileController, MyResultsController, MyStatementController, PaymentGatewayController, SmsGatewayController, StudentPaymentController, StudentRouteStopController, VoteheadController, FeeStructureController, OtherChargeTypeController, OtherChargeController, ExemptionController, InvoiceController, PaymentController, StudentStatementController, PublicAdmissionController, AdmissionApplicationController, AdmissionRequirementController};
+use App\Http\Controllers\{AccountingReportController,
+    AdminPaymentController,
+    BankReconciliationController,
+    CommunicationController,
+    CommunicationTemplateController,
+    DebtorReportController,
+    ExpenseCategoryController,
+    ExpenseTransactionController,
+    ImpersonationController,
+    IncomeCategoryController,
+    IncomeTransactionController,
+    LessonRequirementController,
+    LogController,
+    MyTimetableController,
+    Payroll\PaymentScheduleController,
+    Payroll\StaffPayeeController,
+    TimeSlotController,
+    TimeSlotGroupController,
+    TimetableController,
+    VehicleController,
+    UserController,
+    TransportRouteController,
+    TermSubjectResultController,
+    TermResultCompletionController,
+    SubjectTeacherAssignmentController,
+    StudentController,
+    StreamController,
+    RouteAssignmentController,
+    RoomReservationController,
+    RoomController,
+    RoomAllocationController,
+    RoleController,
+    ReportCardPdfController,
+    ReportCardController,
+    ProgressionExceptionController,
+    ProgressionController,
+    PermissionController,
+    PathwayController,
+    PathwayClassificationController,
+    MarksEntryController,
+    LearningAreaController,
+    HostelController,
+    GradingBandController,
+    GradeLevelController,
+    EnrollmentController,
+    EducationLevelController,
+    DriverController,
+    DashboardController,
+    AssessmentTypeController,
+    AssessmentController,
+    AcademicTermController,
+    BankWebhookController,
+    ChangePasswordController,
+    EmailGatewayController,
+    MyPaymentsController,
+    MyProfileController,
+    MyResultsController,
+    MyStatementController,
+    PaymentGatewayController,
+    SmsGatewayController,
+    StudentPaymentController,
+    StudentRouteStopController,
+    VoteheadController,
+    FeeStructureController,
+    OtherChargeTypeController,
+    OtherChargeController,
+    ExemptionController,
+    InvoiceController,
+    PaymentController,
+    StudentStatementController,
+    PublicAdmissionController,
+    AdmissionApplicationController,
+    AdmissionRequirementController,
+    WhatsappGatewayController};
 
 Route::prefix('apply')->name('apply.')->group(function () {
     Route::get('/', [PublicAdmissionController::class, 'landing'])->name('landing');
@@ -151,16 +223,25 @@ Route::middleware('auth')->group(function () {
         Route::patch('sms-gateways/{smsGateway}', [SmsGatewayController::class, 'update'])->name('sms-gateways.update');
         Route::post('sms-gateways/{smsGateway}/activate', [SmsGatewayController::class, 'activate'])->name('sms-gateways.activate');
         Route::delete('sms-gateways/{smsGateway}', [SmsGatewayController::class, 'destroy'])->name('sms-gateways.destroy');
+        Route::post('sms-gateways/{smsGateway}/test', [SmsGatewayController::class, 'test'])->name('sms-gateways.test');
 
         Route::post('payment-gateways', [PaymentGatewayController::class, 'store'])->name('payment-gateways.store');
         Route::patch('payment-gateways/{paymentGateway}', [PaymentGatewayController::class, 'update'])->name('payment-gateways.update');
         Route::post('payment-gateways/{paymentGateway}/activate', [PaymentGatewayController::class, 'activate'])->name('payment-gateways.activate');
         Route::delete('payment-gateways/{paymentGateway}', [PaymentGatewayController::class, 'destroy'])->name('payment-gateways.destroy');
+        Route::post('email-gateways/{emailGateway}/test', [EmailGatewayController::class, 'test'])->name('email-gateways.test');
+
+        Route::post('whatsapp-gateways/{whatsappGateway}/test', [WhatsappGatewayController::class, 'test'])->name('whatsapp-gateways.test');
 
         Route::post('email-gateways', [EmailGatewayController::class, 'store'])->name('email-gateways.store');
         Route::patch('email-gateways/{emailGateway}', [EmailGatewayController::class, 'update'])->name('email-gateways.update');
         Route::post('email-gateways/{emailGateway}/activate', [EmailGatewayController::class, 'activate'])->name('email-gateways.activate');
         Route::delete('email-gateways/{emailGateway}', [EmailGatewayController::class, 'destroy'])->name('email-gateways.destroy');
+
+        Route::post('settings/whatsapp-gateways', [WhatsappGatewayController::class, 'store'])->name('whatsapp-gateways.store');
+        Route::patch('settings/whatsapp-gateways/{whatsappGateway}', [WhatsappGatewayController::class, 'update'])->name('whatsapp-gateways.update');
+        Route::post('settings/whatsapp-gateways/{whatsappGateway}/activate', [WhatsappGatewayController::class, 'activate'])->name('whatsapp-gateways.activate');
+        Route::delete('settings/whatsapp-gateways/{whatsappGateway}', [WhatsappGatewayController::class, 'destroy'])->name('whatsapp-gateways.destroy');
     });
 
     Route::prefix('users')->name('users.')->group(function () {
@@ -677,9 +758,41 @@ Route::middleware('auth')->group(function () {
             Route::put('levels/{level}/settings', [AdmissionRequirementController::class, 'settings'])->name('settings');
         });
     });
-});
 
-Route::prefix('finance/reports') ->name('finance.reports.')->middleware(['auth']) ->group(function () {
+    Route::prefix('communication')->name('communication.')->group(function () {
+        Route::get('/', [CommunicationController::class, 'index'])->name('index');
+        Route::get('/create', [CommunicationController::class, 'create'])->name('compose');
+        Route::post('/', [CommunicationController::class, 'store'])->name('store');
+
+        Route::prefix('templates')->name('templates.')->group(function () {
+            Route::get('/', [CommunicationTemplateController::class, 'index'])->name('index');
+            Route::post('/', [CommunicationTemplateController::class, 'store'])->name('store');
+            Route::patch('/{template}', [CommunicationTemplateController::class, 'update'])->name('update');
+            Route::delete('/{template}', [CommunicationTemplateController::class, 'destroy'])->name('destroy');
+        });
+    });
+
+    Route::prefix('accounting/payroll')->name('payroll.')->group(function () {
+
+        Route::get('payees/users', [StaffPayeeController::class, 'users'])->name('payees.users');
+        Route::get('payees/import', [StaffPayeeController::class, 'importForm'])->name('payees.import');
+        Route::post('payees/import', [StaffPayeeController::class, 'importStore'])->name('payees.import.store');
+        Route::resource('payees', StaffPayeeController::class)->except('show');
+        Route::get('payees/export', [StaffPayeeController::class, 'export'])->name('payees.export');
+
+        Route::get('schedules', [PaymentScheduleController::class, 'index'])->name('schedules.index');
+        Route::post('schedules', [PaymentScheduleController::class, 'store'])->name('schedules.store');
+        Route::get('schedules/{schedule}', [PaymentScheduleController::class, 'show'])->name('schedules.show');
+        Route::put('schedules/{schedule}/lines', [PaymentScheduleController::class, 'updateLines'])->name('schedules.lines');
+        Route::post('schedules/{schedule}/regenerate', [PaymentScheduleController::class, 'regenerate'])->name('schedules.regenerate');
+        Route::post('schedules/{schedule}/approve', [PaymentScheduleController::class, 'approve'])->name('schedules.approve');
+        Route::post('schedules/{schedule}/paid', [PaymentScheduleController::class, 'markPaid'])->name('schedules.paid');
+        Route::delete('schedules/{schedule}', [PaymentScheduleController::class, 'destroy'])->name('schedules.destroy');
+        Route::get('schedules/{schedule}/pdf', [PaymentScheduleController::class, 'pdf'])->name('schedules.pdf');
+        Route::get('schedules/{schedule}/excel', [PaymentScheduleController::class, 'excel'])->name('schedules.excel');
+    });
+
+    Route::prefix('finance/reports') ->name('finance.reports.')->middleware(['auth']) ->group(function () {
         Route::get('/', [DebtorReportController::class, 'hub'])->name('index');
 
         Route::get('debtors', [DebtorReportController::class, 'index'])->name('debtors');
@@ -688,6 +801,9 @@ Route::prefix('finance/reports') ->name('finance.reports.')->middleware(['auth']
         Route::get('debtors/export/excel', [DebtorReportController::class, 'excel'])->name('debtors.excel');
         Route::get('debtors/export/pdf', [DebtorReportController::class, 'pdf'])->name('debtors.pdf');
     });
+
+});
+
 
 
 Route::post('/mpesa/callback', [MyPaymentsController::class, 'handle'])->name('mpesa.callback')->withoutMiddleware(['auth', 'verified']); // adjust to whatever middleware wraps your web routes
@@ -701,3 +817,5 @@ Route::prefix('webhooks/banks')->group(function () {
 
 Route::post('settings/payment-gateways/kcb/fetch-ipn-signature', [BankWebhookController::class, 'fetch'])
     ->name('settings.payment-gateways.kcb.fetch-ipn-signature');
+
+Route::post('webhook-whatsapp-callback', [SmsGatewayController::class, 'whatsappCallback'])->withoutMiddleware(['auth', 'verified'])->name('webhooks.whatsapp.cloud');
