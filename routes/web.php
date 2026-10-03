@@ -20,6 +20,7 @@ use App\Http\Controllers\{AccountingReportController,
     LogController,
     MyTimetableController,
     Payroll\PaymentScheduleController,
+    Payroll\PaymentScheduleExportController,
     Payroll\StaffPayeeController,
     TimeSlotController,
     TimeSlotGroupController,
@@ -790,6 +791,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('schedules/{schedule}', [PaymentScheduleController::class, 'destroy'])->name('schedules.destroy');
         Route::get('schedules/{schedule}/pdf', [PaymentScheduleController::class, 'pdf'])->name('schedules.pdf');
         Route::get('schedules/{schedule}/excel', [PaymentScheduleController::class, 'excel'])->name('schedules.excel');
+
+        Route::get('schedules-export', PaymentScheduleExportController::class)->name('schedules.export');
     });
 
     Route::prefix('finance/reports') ->name('finance.reports.')->middleware(['auth']) ->group(function () {

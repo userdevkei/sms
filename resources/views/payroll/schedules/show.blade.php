@@ -79,6 +79,7 @@
                     <table class="table table-sm table-hover ps-table mb-0 w-100">
                         <thead>
                         <tr>
+                            <th>#</th>
                             <th class="ps-3">Name</th>
                             <th class="text-center">Days</th>
                             <th>Adjustments</th>
@@ -103,6 +104,7 @@
                                 data-pension="{{ $l->pension }}" data-ins="{{ $l->insurance_premium }}" data-mort="{{ $l->mortgage_interest }}"
                                 data-other="{{ $l->other_deductions }}"
                                 data-items="{{ json_encode($items) }}">
+                                <td>{{ $loop->iteration }}</td>
                                 <td class="ps-3">
                                     <div class="fw-semibold">{{ $l->full_name }}</div>
                                     <div class="small text-muted">{{ $l->staff_no }} {{ $l->kra_pin }}</div>
@@ -136,7 +138,7 @@
                         @if($schedule->lines->count())
                             <tfoot>
                             <tr>
-                                <td class="ps-3" colspan="3">Total</td>
+                                <td class="ps-3" colspan="4">Total</td>
                                 <td class="num" id="tGross">{{ number_format($schedule->lines->sum('gross_pay'), 2) }}</td>
                                 <td class="num" id="tNssf">{{ number_format($schedule->lines->sum('nssf'), 2) }}</td>
                                 <td class="num" id="tShif">{{ number_format($schedule->lines->sum('shif'), 2) }}</td>
