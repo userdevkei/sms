@@ -25,9 +25,9 @@ class Driver extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function routeAssignments(): HasMany
+    public function routeAssignments(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(RouteAssignment::class);
+        return $this->hasMany(RouteAssignment::class, 'driver_id', 'user_id');
     }
 
     // Convenience passthroughs so callers don't need $driver->user->full_name everywhere

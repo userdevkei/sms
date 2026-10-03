@@ -27,74 +27,87 @@ class SendCommunicationBatchJob implements ShouldQueue
     public function __construct(protected Communication $communication, protected array $recipients) {}
 
     public function handle(GatewayResolver $resolver): void
-    {
-        if ($this->batch()?->cancelled()) {
-            return;
-        }
-
-        $comm     = $this->communication;
-        $channel  = $comm->channel;
-        $template = $comm->template;
-        $isEmail  = $channel === 'email';
-        $gateway  = $resolver->resolve($this->providerFor($channel));
-
-        Log::info('Dispatching comms', [
-            'gateway' => $gateway,
-            'channel'          => $channel,
-            'is_email'  => $isEmail,
-        ]);
-
-        // Resolve once per batch, not per recipient
-        $layout = $isEmail ? [
-            'schoolName' => setting('school_name') ?? config('app.name'),
-            'logoUrl'    => $this->resolveImageBase64(setting('logo_path')),
-            'brandColor' => setting('primary_color') ?? '#0d6efd',
-        ] : [];
-
-        $templateBody = $this->bodyFor($channel, $template);
-
-        // Retry-safe: skip destinations already logged for this communication
-        $done = CommunicationRecipient::where('communication_id', $comm->id)
-            ->whereIn('destination', array_column($this->recipients, 'destination'))
-            ->pluck('destination')
-            ->all();
-
-        foreach ($this->recipients as $r) {
-            if (in_array($r['destination'], $done, true)) {
-                continue;
-            }
-
-            $placeholders = $r['placeholders'] ?? [];
-            $subject      = $isEmail ? CommunicationRenderer::render($template?->subject ?? '', $placeholders) : null;
-            $body         = CommunicationRenderer::render($templateBody, $placeholders);
-
-            try {
-                if ($isEmail) {
-                    $body = view('emails.communication', ['bodyHtml' => $body] + $layout)->render();
-                }
-
-                $result = $gateway->send($r['destination'], $body, $subject);
-            } catch (Throwable $e) {
-                Log::warning('Communication send failed', [
-                    'communication_id' => $comm->id,
-                    'destination'      => $r['destination'],
-                    'error'            => $e->getMessage(),
-                ]);
-                $result = ['success' => false, 'message_id' => null, 'error' => $e->getMessage()];
-            }
-
-            CommunicationRecipient::create([
-                'communication_id'   => $comm->id,
-                'recipient_type'     => $r['recipient_type'] ?? null,
-                'recipient_id'       => $r['recipient_id'] ?? null,
-                'destination'        => $r['destination'],
-                'status'             => ($result['success'] ?? false) ? 'sent' : 'failed',
-                'gateway_message_id' => $result['message_id'] ?? null,
-                'error'              => $result['error'] ?? null,
-                'sent_at'            => ($result['success'] ?? false) ? now() : null,
-            ]);
-        }
+{
+    if ($this->batch()?->cancelled()) {
+        return;
     }
+
+    Log::info($this->providerFor($this->communication->channel) . ' batch job started', [
+        'communication_id' => $this->communication->id,
+        'recipient_count'  => count($this->recipients),
+    ]);
+
+    $comm     = $this->communication;
+    $channel  = $comm->channel;
+    $template = $comm->template;
+    $isEmail  = $channel === 'email';
+    $gateway  = $resolver->resolve($this->providerFor($channel));
+
+    Log::info('Dispatching comms', [
+        'gateway'  => $gateway,
+        'channel'  => $channel,
+        'is_email' => $isEmail,
+        'templated' => $template !== null,
+    ]);
+
+    // Resolve once per batch, not per recipient
+    $layout = $isEmail ? [
+        'schoolName' => setting('school_name') ?? config('app.name'),
+        'logoUrl'    => $this->resolveImageBase64(setting('logo_path')),
+        'brandColor' => setting('primary_color') ?? '#0d6efd',
+    ] : [];
+
+    // Templated: use the template. Non-templated: use the communication's own details.
+    $templateBody    = $template
+        ? $this->bodyFor($channel, $template)
+        : (string) ($comm->body ?? '');
+
+    $templateSubject = $template
+        ? (string) ($template->subject ?? $comm->subject ?? '')
+        : (string) ($comm->subject ?? '');
+
+    // Retry-safe: skip destinations already logged for this communication
+    $done = CommunicationRecipient::where('communication_id', $comm->id)
+        ->whereIn('destination', array_column($this->recipients, 'destination'))
+        ->pluck('destination')
+        ->all();
+
+    foreach ($this->recipients as $r) {
+        if (in_array($r['destination'], $done, true)) {
+            continue;
+        }
+
+        $placeholders = $r['placeholders'] ?? [];
+        $subject      = $isEmail ? CommunicationRenderer::render($templateSubject, $placeholders) : null;
+        $body         = CommunicationRenderer::render($templateBody, $placeholders);
+
+        try {
+            if ($isEmail) {
+                $body = view('emails.communication', ['bodyHtml' => $body] + $layout)->render();
+            }
+
+            $result = $gateway->send($r['destination'], $body, $subject);
+        } catch (Throwable $e) {
+            Log::warning('Communication send failed', [
+                'communication_id' => $comm->id,
+                'destination'      => $r['destination'],
+                'error'            => $e->getMessage(),
+            ]);
+            $result = ['success' => false, 'message_id' => null, 'error' => $e->getMessage()];
+        }
+
+        CommunicationRecipient::create([
+            'communication_id'   => $comm->id,
+            'recipient_type'     => $r['recipient_type'] ?? null,
+            'recipient_id'       => $r['recipient_id'] ?? null,
+            'destination'        => $r['destination'],
+            'status'             => ($result['success'] ?? false) ? 'sent' : 'failed',
+            'gateway_message_id' => $result['message_id'] ?? null,
+            'error'              => $result['error'] ?? null,
+            'sent_at'            => ($result['success'] ?? false) ? now() : null,
+        ]);
+    }
+}
 
     private function providerFor(string $channel): string
     {

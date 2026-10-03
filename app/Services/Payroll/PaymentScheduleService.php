@@ -82,11 +82,22 @@ class PaymentScheduleService
 
     public function refreshTotals(PaymentSchedule $s): void
     {
-        $t = $s->lines()->selectRaw('
-            COALESCE(SUM(gross_pay),0) gross, COALESCE(SUM(paye),0) paye, COALESCE(SUM(nssf),0) nssf,
-            COALESCE(SUM(shif),0) shif, COALESCE(SUM(housing_levy),0) ahl, COALESCE(SUM(net_pay),0) net,
-            COALESCE(SUM(gross_pay + non_taxable_allowances + one_off_reimbursement + employer_nssf + employer_housing_levy + nita),0) cost
-        ')->first();
+        $t = $s->lines()
+            ->reorder()
+            ->selectRaw('
+                COALESCE(SUM(gross_pay),0)            AS gross,
+                COALESCE(SUM(paye),0)                 AS paye,
+                COALESCE(SUM(nssf),0)                 AS nssf,
+                COALESCE(SUM(shif),0)                 AS shif,
+                COALESCE(SUM(housing_levy),0)         AS ahl,
+                COALESCE(SUM(net_pay),0)              AS net,
+                COALESCE(SUM(
+                    COALESCE(gross_pay,0) + COALESCE(non_taxable_allowances,0)
+                + COALESCE(one_off_reimbursement,0) + COALESCE(employer_nssf,0)
+                + COALESCE(employer_housing_levy,0) + COALESCE(nita,0)
+                ),0)                                  AS cost
+            ')
+            ->first();
 
         $s->update([
             'total_gross'         => $t->gross,

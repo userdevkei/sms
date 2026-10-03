@@ -45,7 +45,10 @@ class TransportRouteController extends Controller
 
         $data = $routes->values()->map(function ($route, $index) use ($start) {
             $assignment = $route->currentAssignment();
-            $fareRange = $route->stops()->selectRaw('MIN(fare) as min_fare, MAX(fare) as max_fare')->first();
+            $fareRange  = $route->stops()
+                ->reorder()
+                ->selectRaw('MIN(fare) as min_fare, MAX(fare) as max_fare')
+                ->first();
 
             return [
                 'sn'          => $start + $index + 1,

@@ -7,28 +7,6 @@ use App\Models\Gateway;
 use App\Services\Communication\Gateways\GatewayInterface;
 use RuntimeException;
 
-/*class GatewayResolver
-{
-    public function resolve(string $channel): GatewayInterface
-    {
-        $gateway = Gateway::active($channel);
-
-        if (!$gateway) {
-            throw new RuntimeException("No active {$channel} gateway is configured.");
-        }
-
-        $driverClass = config("communication.drivers.{$channel}.{$gateway->provider}");
-
-        if (!$driverClass) {
-            throw new RuntimeException("Unknown provider '{$gateway->provider}' for {$channel}.");
-        }
-
-        $driver = app($driverClass);
-        $driver->configure($gateway->config());
-
-        return $driver;
-    }
-}*/
 class GatewayResolver
 {
     public function resolve(string $channel): GatewayInterface

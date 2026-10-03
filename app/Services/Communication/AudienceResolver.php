@@ -8,6 +8,8 @@ use App\Models\Communication;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+
 
 class AudienceResolver
 {
@@ -70,42 +72,52 @@ class AudienceResolver
     }
 
     protected function students(Communication $comm): Collection
-    {
-        $params = $comm->audience_params ?? [];
+{
+    $params = $comm->audience_params ?? [];
 
-        $query = User::query()->whereHas('roles', fn ($q) => $q->where('name', 'student'));
+    $query = User::query()->whereHas('roles', fn ($q) => $q->where('name', 'student'));
 
-        $query = match ($params['mode'] ?? 'all') {
-            'grade'    => $query->where('grade_level_id', $params['grade_level_id']),
-            'specific' => $query->whereIn('id', $params['ids'] ?? []),
-            default    => $query,
-        };
+    $query = match ($params['mode'] ?? 'all') {
+        'grade'    => $query->whereHas('currentEnrollment', function ($q) use ($params) {
+            $q->where($q->getModel()->qualifyColumn('grade_level_id'), $params['grade_level_id'] ?? null);
+        }),
+        'specific' => $query->whereIn('id', $params['ids'] ?? []),
+        default    => $query,
+    };
 
-        $isFeeBalance = $comm->template?->trigger_key === 'finance.fee_balance_reminder';
+    $isFeeBalance = $comm->template?->trigger_key === 'finance.fee_balance_reminder';
 
-        if ($isFeeBalance) {
-            $query
-                ->withSum(['invoices as total_charged' => fn ($q) => $q->whereNull('deleted_at')], 'total_amount')
-                ->withSum(['payments as total_paid' => fn ($q) => $q->whereNull('deleted_at')], 'amount');
-        }
-
-        return $query->get()
-            ->when($isFeeBalance, fn ($c) => $c->map(function ($s) {
-                $s->balance_total = (float) ($s->total_charged ?? 0) - (float) ($s->total_paid ?? 0);
-                return $s;
-            })->filter(fn ($s) => $s->balance_total > 0))
-            ->map(fn ($s) => $this->row($comm, $s->email, $s->phone_number, User::class, $s->id, [
-                'student_name'   => trim("{$s->first_name} {$s->last_name}"),
-                'student_number' => $s->userID,
-                'balance'        => $isFeeBalance ? number_format($s->balance_total, 2) : null,
-            ]));
+    if ($isFeeBalance) {
+        $query
+            ->withSum(['invoices as total_charged' => fn ($q) => $q->whereNull('deleted_at')], 'total_amount')
+            ->withSum(['payments as total_paid' => fn ($q) => $q->whereNull('deleted_at')], 'amount');
     }
+
+    return $query->get()
+        ->when($isFeeBalance, fn ($c) => $c->map(function ($s) {
+            $s->balance_total = (float) ($s->total_charged ?? 0) - (float) ($s->total_paid ?? 0);
+            return $s;
+        })->filter(fn ($s) => $s->balance_total > 0))
+        ->map(fn ($s) => $this->row($comm, $s->email, $s->phone_number, User::class, $s->id, [
+            'student_name'   => trim("{$s->first_name} {$s->last_name}"),
+            'student_number' => $s->userID,
+            'balance'        => $isFeeBalance ? number_format($s->balance_total, 2) : null,
+        ]));
+}
 
     protected function staff(Communication $comm): Collection
     {
-        $params = $comm->audience_params ?? [];
+        $params   = $comm->audience_params ?? [];
+        $excluded = ['student', 'parent', 'guardian']; // match your roles.name / roles.slug values
 
-        $query = User::where('is_staff', true);
+        $query = User::query()
+            ->whereNotExists(function ($q) use ($excluded) {
+                $q->select(DB::raw(1))
+                    ->from('role_users')
+                    ->join('roles', 'roles.id', '=', 'role_users.role_id')
+                    ->whereColumn('role_users.user_id', 'users.id')
+                    ->whereIn('roles.name', $excluded);
+            });
 
         if (($params['mode'] ?? 'all') === 'specific') {
             $query->whereIn('id', $params['ids'] ?? []);
