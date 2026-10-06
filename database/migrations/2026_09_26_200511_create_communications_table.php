@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('subject')->nullable();
             $table->text('body');
 
-            $table->enum('audience_type', ['manual', 'all_students', 'grade_level', 'fee_balance', 'custom_query'])->default('manual');
+            $table->enum('audience_type', ['manual', 'students', 'grade_level', 'fee_balance', 'custom_query', 'staff'])->default('manual');
             $table->json('audience_params')->nullable();
 
             $table->enum('status', ['draft', 'scheduled', 'sending', 'sent', 'failed', 'cancelled'])->default('draft');

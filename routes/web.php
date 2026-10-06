@@ -19,6 +19,7 @@ use App\Http\Controllers\{AccountingReportController,
     LessonRequirementController,
     LogController,
     MyTimetableController,
+    Payroll\MyPayrollController,
     Payroll\PaymentScheduleController,
     Payroll\PaymentScheduleExportController,
     Payroll\PayrollDocumentController,
@@ -812,6 +813,12 @@ Route::middleware('auth')->group(function () {
         Route::get('debtors/export/excel', [DebtorReportController::class, 'excel'])->name('debtors.excel');
         Route::get('debtors/export/pdf', [DebtorReportController::class, 'pdf'])->name('debtors.pdf');
     });
+
+    Route::prefix('my-payroll')->name('my-payroll.')->group(function () {
+            Route::get('/', [MyPayrollController::class, 'index'])->name('index');
+            Route::get('payslip/{line}', [MyPayrollController::class, 'payslip'])->name('payslip');   // ?download=1
+            Route::get('p9/{year}', [MyPayrollController::class, 'p9'])->whereNumber('year')->name('p9'); // ?download=1
+        });
 
 });
 
