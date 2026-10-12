@@ -16,10 +16,26 @@ class AuthenticatedSessionController extends Controller
         return view('auth.login');
     }
 
-    public function store(LoginRequest $request)/*: RedirectResponse*/
+//    public function store(LoginRequest $request)/*: RedirectResponse*/
+//    {
+//        $request->authenticate();
+//        $request->session()->regenerate();
+//
+//        return redirect()->intended(route('dashboard'));
+//    }
+
+
+    public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
         $request->session()->regenerate();
+
+
+        if ($request->user()->isGuardian()) {
+            $request->session()->forget('url.intended'); // a stale admin URL would just 403 them
+
+            return redirect()->route('guardian.dashboard');
+        }
 
         return redirect()->intended(route('dashboard'));
     }

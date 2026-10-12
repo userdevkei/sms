@@ -16,6 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'mpesa/callback',
             'webhooks/banks/*'
         ]);
+
+        $middleware->alias([
+            'guardian'         => \App\Http\Middleware\EnsureGuardian::class,
+            'guardian.student' => \App\Http\Middleware\EnsureGuardianOwnsStudent::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

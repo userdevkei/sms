@@ -13,6 +13,15 @@ use App\Http\Controllers\{AccountingReportController,
     DebtorReportController,
     ExpenseCategoryController,
     ExpenseTransactionController,
+    Guardian\GuardianDashboardController,
+    Guardian\GuardianFinanceController,
+    Guardian\GuardianMessageController,
+    Guardian\GuardianPaymentController,
+    Guardian\GuardianReportCardController,
+    Guardian\GuardianResultsController,
+    Guardian\GuardianStatementController,
+    Guardian\GuardianTimetableController,
+    GuardianStudentController,
     ImpersonationController,
     IncomeCategoryController,
     IncomeTransactionController,
@@ -706,6 +715,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/my-timetable', [MyTimetableController::class, 'index'])->name('my-timetable.index');
         Route::get('/my-class-timetable', [MyTimetableController::class, 'classTimetable'])->name('my-timetable.class');
+
     });
 
     Route::resource('timeslot-groups', TimeSlotGroupController::class)->except('show')->middleware(['auth', 'can:timetables.manage']);
@@ -820,9 +830,93 @@ Route::middleware('auth')->group(function () {
             Route::get('p9/{year}', [MyPayrollController::class, 'p9'])->whereNumber('year')->name('p9'); // ?download=1
         });
 
+    Route::prefix('users/{user}/students')->name('users.guardian-students.')->group(function () {
+        Route::get('search',     [GuardianStudentController::class, 'search'])->name('search');
+        Route::post('/',         [GuardianStudentController::class, 'store'])->name('store');
+        Route::patch('{student}', [GuardianStudentController::class, 'update'])->name('update');
+        Route::delete('{student}', [GuardianStudentController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('guardians')->name('guardians.')->group(function () {
+        Route::get('/',            [UserController::class, 'index'])->name('index');
+        Route::get('data',         [UserController::class, 'data'])->name('data');
+        Route::get('create',       [UserController::class, 'create'])->name('create');
+        Route::post('/',           [UserController::class, 'store'])->name('store');
+        Route::get('{user}/edit',  [UserController::class, 'edit'])->name('edit');
+        Route::put('{user}',       [UserController::class, 'update'])->name('update');
+        Route::get('export/pdf',   [UserController::class, 'exportPdf'])->name('export.pdf');
+        Route::get('export/excel', [UserController::class, 'exportExcel'])->name('export.excel');
+    });
 });
 
 
+//Route::middleware(['auth'])->prefix('guardian')->name('guardian.')->group(function () {
+//    Route::get('/', [GuardianDashboardController::class, 'index'])->name('dashboard');
+//
+//    Route::prefix('students/{child}')->name('students.')->group(function () {
+//        Route::get('/',                      [GuardianDashboardController::class, 'student'])->name('show');
+//        Route::get('payments',               [GuardianPaymentController::class, 'index'])->name('payments');
+//        Route::get('pay',                    [GuardianPaymentController::class, 'pay'])->name('pay');
+//        Route::post('payments-initiate',     [GuardianPaymentController::class, 'initiate'])->name('payments.initiate');
+//        Route::post('payments-retry/{txn}',  [GuardianPaymentController::class, 'retry'])->name('payments.retry');
+//        Route::get('payments-status/{txn}',  [GuardianPaymentController::class, 'status'])->name('payments.status');
+//        Route::get('statement',              [GuardianStatementController::class, 'index'])->name('statement');
+//        Route::get('statement/pdf',          [GuardianStatementController::class, 'pdf'])->name('statement.pdf');
+//
+//
+//        Route::prefix('results')->name('results.')->group(function () {
+//            Route::get('term/{reportId}/pdf',                    [GuardianReportCardController::class, 'term'])->name('term-pdf');
+//            Route::get('assessment/{enrollmentId}/{termId}/pdf', [GuardianReportCardController::class, 'assessment'])->name('assessment-pdf');
+//            Route::get('year/{enrollmentId}/pdf',              [GuardianReportCardController::class, 'year'])->name('year-pdf');
+//        });
+//
+//        Route::get('results', [GuardianResultsController::class, 'index'])->name('results');
+//        Route::get('timetable', [GuardianTimetableController::class, 'index'])->name('timetable');
+//
+//        // inside Route::middleware(['auth','guardian','can:guardian-portal.view'])->prefix('guardian')->name('guardian.')->group(...)
+//        Route::get('messages',        [GuardianMessageController::class, 'index'])->name('messages');
+//    });
+//
+//
+//    Route::get('messages/{msg}',  [GuardianMessageController::class, 'show'])->name('messages.show');
+//
+//    // inside the students/{child} group
+//    Route::get('messages', [GuardianMessageController::class, 'forChild'])->name('messages');   // guardian.students.messages
+//
+//});
+
+Route::middleware(['auth'])->prefix('guardian')->name('guardian.')->group(function () {
+    Route::get('/', [GuardianDashboardController::class, 'index'])->name('dashboard');
+
+    // Across all students (top-level sidebar)
+    Route::get('messages',       [GuardianMessageController::class, 'index'])->name('messages');
+    Route::get('messages/{msg}', [GuardianMessageController::class, 'show'])->name('messages.show');
+
+    Route::prefix('students/{child}')->middleware('guardian.student')->name('students.')->group(function () {
+        Route::get('/',                     [GuardianDashboardController::class, 'student'])->name('show');
+
+        Route::get('payments',              [GuardianPaymentController::class, 'index'])->name('payments');
+        Route::get('pay',                   [GuardianPaymentController::class, 'pay'])->name('pay')->middleware('can:guardian-portal.pay');
+        Route::post('payments-initiate',    [GuardianPaymentController::class, 'initiate'])->name('payments.initiate')->middleware('can:guardian-portal.pay');
+        Route::post('payments-retry/{txn}', [GuardianPaymentController::class, 'retry'])->name('payments.retry')->middleware('can:guardian-portal.pay');
+        Route::get('payments-status/{txn}', [GuardianPaymentController::class, 'status'])->name('payments.status');
+
+        Route::get('statement',             [GuardianStatementController::class, 'index'])->name('statement');
+        Route::get('statement/pdf',         [GuardianStatementController::class, 'pdf'])->name('statement.pdf');
+
+        Route::prefix('results')->name('results.')->group(function () {
+            Route::get('term/{reportId}/pdf',                    [GuardianReportCardController::class, 'term'])->name('term-pdf');
+            Route::get('assessment/{enrollmentId}/{termId}/pdf', [GuardianReportCardController::class, 'assessment'])->name('assessment-pdf');
+            Route::get('year/{enrollmentId}/pdf',                [GuardianReportCardController::class, 'year'])->name('year-pdf');
+        });
+        Route::get('results',   [GuardianResultsController::class, 'index'])->name('results');
+        Route::get('timetable', [GuardianTimetableController::class, 'index'])->name('timetable');
+
+        // This child only (child sidebar)
+        Route::get('messages',       [GuardianMessageController::class, 'forChild'])->name('messages');
+        Route::get('messages/{msg}', [GuardianMessageController::class, 'showForChild'])->name('messages.show');
+    });
+});
 
 Route::post('/mpesa/callback', [MyPaymentsController::class, 'handle'])->name('mpesa.callback')->withoutMiddleware(['auth', 'verified']); // adjust to whatever middleware wraps your web routes
 

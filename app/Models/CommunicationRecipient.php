@@ -11,7 +11,7 @@ class CommunicationRecipient extends Model
 {
     use HasStringId, LogsActivity;
 
-    protected $fillable = ['id', 'communication_id', 'recipient_type', 'recipient_id', 'destination', 'status', 'gateway_message_id', 'error', 'sent_at'];
+    protected $fillable = ['id', 'communication_id', 'recipient_type', 'recipient_id', 'destination', 'subject', 'message', 'status', 'gateway_message_id', 'error', 'sent_at'];
 
     protected function casts(): array { return ['sent_at' => 'datetime']; }
 

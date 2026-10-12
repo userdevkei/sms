@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\HasGuardianRelations;
 use App\Models\Concerns\HasStringId;
 use App\Traits\LogsActivity;
 use Database\Factories\UserFactory;
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\Storage;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes, HasStringId, LogsActivity;
+    use HasFactory, Notifiable, SoftDeletes, HasStringId, LogsActivity, HasGuardianRelations;
 
     protected $fillable = [
         'id', 'userID', 'first_name', 'middle_name', 'last_name', 'gender',
@@ -144,4 +145,19 @@ class User extends Authenticatable
     {
         return $this->hasMany(Payment::class);
     }
+
+    public function isGuardian(): bool
+    {
+        if ($this->hasRole('guardian')) {
+            return true;
+        }
+        return false;
+    }
+
+//    public function activeStudents($query)
+//    {
+//        return $query
+//            ->where('users.status', 'active')
+//            ->whereHas('roles', fn ($q) => $q->where('name', 'student'));
+//    }
 }

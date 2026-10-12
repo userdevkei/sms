@@ -1,12 +1,15 @@
 @extends('layouts.app')
-@section('title', 'Users')
+@php $isGuardians = ($scope ?? 'staff') === 'guardian'; @endphp
+@section('title', $isGuardians ? 'Guardians' : 'Staff')
 
 @section('content')
 
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
         <div>
-            <h1 class="h4 mb-1">System Users</h1>
-            <p class="text-muted mb-0">Manage everyone with access to the system.</p>
+            <h1 class="h4 mb-1">{{ $isGuardians ? 'Guardians' : 'Staff' }}</h1>
+            <p class="text-muted mb-0">
+                {{ $isGuardians ? 'Manage parents/guardians and the students linked to them.' : 'Manage staff and other system users.' }}
+            </p>
         </div>
         <div class="d-flex gap-2">
             <div class="dropdown">
@@ -19,8 +22,8 @@
                 </ul>
             </div>
             @can('users.manage')
-                <a href="{{ route('users.create') }}" class="btn btn-sm btn-primary">
-                    <i class="bi bi-plus-lg me-1"></i> Add User
+                <a href="{{ route($isGuardians ? 'guardians.create' : 'users.create') }}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> {{ $isGuardians ? 'Add Guardian' : 'Add User' }}
                 </a>
             @endcan
         </div>
@@ -49,7 +52,8 @@
                         <option value="female">Female</option>
                     </select>
                 </div>
-                <div class="col-6 col-md-3">
+                {{-- Kept in the DOM (hidden for guardians) so users-index.js still finds #filterRole --}}
+                <div class="col-6 col-md-3 {{ $isGuardians ? 'd-none' : '' }}">
                     <label class="form-label small text-muted mb-1">Role</label>
                     <select id="filterRole" class="form-select form-select-sm">
                         <option value="">All Roles</option>
@@ -101,7 +105,7 @@
     <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
     <script>
-        const usersDataUrl = @json(route('users.data'));
+        const usersDataUrl = @json(route($isGuardians ? 'guardians.data' : 'users.data'));
         const canManageUsers = @json(auth()->user()->hasPermission('users.manage'));
         const canImpersonateUser = @json(auth()->user()->hasPermission('users.impersonate'));
         const canViewUser = @json(auth()->user()->hasPermission('users.profile'));
@@ -112,7 +116,7 @@
 @endpush
 @push('scripts')
     <script>
-        const exportPdfUrl = @json(route('users.export.pdf'));
-        const exportExcelUrl = @json(route('users.export.excel'));
+        const exportPdfUrl = @json(route($isGuardians ? 'guardians.export.pdf' : 'users.export.pdf'));
+        const exportExcelUrl = @json(route($isGuardians ? 'guardians.export.excel' : 'users.export.excel'));
     </script>
 @endpush

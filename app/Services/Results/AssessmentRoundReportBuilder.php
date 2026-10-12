@@ -44,6 +44,10 @@ class AssessmentRoundReportBuilder
             ];
         }
 
+        // Subjects listed alphabetically by name (case-insensitive, natural order).
+        // uasort keeps the learning_area_id keys, so ranks below are unaffected.
+        uasort($subjectScores, fn ($a, $b) => strnatcasecmp($a['subject'], $b['subject']));
+
         $totalSubjects = count($subjectScores);
 
         // Subject-level rank: highest score = rank 1, within this stream, for this round only.
@@ -80,13 +84,16 @@ class AssessmentRoundReportBuilder
                     $count++;
                 }
 
-                $gradingBand = $gradingBands->first(function ($band) use ($score) {
-                    return $score >= $band->min_score && $score <= $band->max_score;
-                });
+                // No score (absent / not sat) => no grade, rather than matching the lowest band as 0.
+                $gradingBand = $score !== null
+                    ? $gradingBands->first(function ($band) use ($score) {
+                        return $score >= $band->min_score && $score <= $band->max_score;
+                    })
+                    : null;
 
                 $subjects[] = [
                     'name'          => $data['subject'],
-                    'score'         => round($score),
+                    'score'         => $score !== null ? round($score) : null,
                     'max_score'     => $data['max_score'],
                     'class_average' => $data['scores']->isNotEmpty() ? $data['scores']->avg() : null,
                     'rank'          => $subjectRanks[$subjectId][$enrollmentId] ?? null,

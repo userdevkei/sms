@@ -12,6 +12,8 @@ class Role extends Model
 {
     use HasStringId, softDeletes, LogsActivity;
 
+    public const GUARDIAN_SLUG = 'guardian';
+
     protected $fillable = ['id', 'name', 'slug', 'description', 'is_system'];
 
     protected $casts = [

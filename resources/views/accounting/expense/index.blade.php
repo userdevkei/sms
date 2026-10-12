@@ -195,7 +195,7 @@
                     lengthMenu: 'Show _MENU_',
                 },
                 ajax: {
-                    url: '{{ route("accounting.expense.data") }}',
+                    url: "{{ route("accounting.expense.data") }}",
                     data: function (d) {
                         Object.assign(d, currentFilterParams());
                     },

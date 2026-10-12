@@ -81,7 +81,7 @@ return [
         ['label' => 'Reports', 'route' => 'accounting.reports.summary', 'permission' => 'accounting.view'],
     ]],
 
-    ['label' => 'My Payslips', 'icon' => 'bi-receipt', 'route' => 'my-payroll.index'/*, 'permission' => 'my-payroll.view'*/],
+    ['label' => 'My Payslips', 'icon' => 'bi-receipt', 'route' => 'my-payroll.index', 'permission' => 'my-payroll.view'],
 
     ['label' => 'P9 Forms', 'icon' => 'bi-file-earmark-spreadsheet', 'route' => 'payroll.p9.index', 'permission' => 'payroll.view'],
 
@@ -92,7 +92,8 @@ return [
     ]],
 
     ['label' => 'Administration', 'icon' => 'bi-gear', 'permission' => 'admin.view', 'children' => [
-        ['label' => 'Users', 'route' => 'users.index', 'permission' => 'users.view'],
+        ['label' => 'Staff', 'route' => 'users.index', 'permission' => 'users.view'],
+        ['label' => 'Guardians', 'route' => 'guardians.index', 'permission' => 'guardians.view'],
         ['label' => 'Roles & Permissions', 'route' => 'roles.index', 'permission' => 'roles.manage'],
         ['label' => 'School Settings', 'route' => 'settings.index', 'permission' => 'settings.manage'],
         ['label' => 'Logs & Audit', 'route' => 'logs.index', 'permission' => 'settings.manage'],

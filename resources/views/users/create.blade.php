@@ -1,14 +1,17 @@
 {{-- resources/views/users/create.blade.php --}}
 @extends('layouts.app')
-@section('title', 'Add User')
+@php $isGuardians = ($scope ?? 'staff') === 'guardian'; @endphp
+@section('title', $isGuardians ? 'Add Guardian' : 'Add User')
 
 @section('content')
     <div class="mb-3">
-        <h1 class="h4 mb-1">Add New User</h1>
-        <p class="text-muted mb-0">Create a new account and assign their role(s).</p>
+        <h1 class="h4 mb-1">{{ $isGuardians ? 'Add New Guardian' : 'Add New User' }}</h1>
+        <p class="text-muted mb-0">
+            {{ $isGuardians ? 'Create the account, then link their student(s) on the next screen.' : 'Create a new account and assign their role(s).' }}
+        </p>
     </div>
 
-    <form method="POST" action="{{ route('users.store') }}" enctype="multipart/form-data" id="userForm">
+    <form method="POST" action="{{ route($isGuardians ? 'guardians.store' : 'users.store') }}" enctype="multipart/form-data" id="userForm">
         @csrf
         @include('users._form')
     </form>

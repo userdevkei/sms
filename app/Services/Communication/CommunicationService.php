@@ -1,6 +1,5 @@
 <?php
 
-// app/Services/Communication/CommunicationService.php
 namespace App\Services\Communication;
 
 use App\Jobs\SendCommunicationBatchJob;

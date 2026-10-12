@@ -1,6 +1,5 @@
 <?php
 
-// app/Support/CommunicationRenderer.php
 namespace App\Support;
 class CommunicationRenderer
 {

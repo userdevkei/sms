@@ -116,23 +116,7 @@ class MyResultsController extends Controller
                 $builtCache[$cacheKey] = collect($builder->build($enrollment->stream, $enrollment->academic_year))
                     ->keyBy(fn ($s) => $s['enrollment']->id);
             }
-
-/*            if ($result = $builtCache[$cacheKey][$enrollment->id] ?? null) {
-                // NOTE: 'subjects' comes straight from build()'s own
-                // buildSubjectBreakdown() — do NOT recompute/overwrite it here.
-                // A prior version of this code clobbered it with a naive
-                // TermSubjectResult average, which is what broke the PDF.
-                $result['grade'] = $result['yearly_average'] !== null
-                    ? (GradingBand::letterFor($result['yearly_average']) ?? '—')
-                    : '—';
-
-                $result['pdf_url'] = route('results.my-report-cards.year-pdf', [
-                    $enrollment->stream_id, $enrollment->academic_year, $enrollment->id,
-                ]);
-
-                $yearResults->push($result);
-            }*/
-
+            
             if ($result = $builtCache[$cacheKey][$enrollment->id] ?? null) {
                 // NOTE: base 'subjects' shape still comes straight from build()'s own
                 // buildSubjectBreakdown() — we only fill in gaps here, never replace it.

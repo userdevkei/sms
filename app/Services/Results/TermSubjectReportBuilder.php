@@ -12,18 +12,6 @@ use App\Models\TermSubjectResult;
 
 class TermSubjectReportBuilder
 {
-    /**
-     * Returns:
-     * [
-     *   'rounds'   => ['Opener', 'Mid Term', 'End Term'],  // distinct round names this term - used as table columns
-     *   'students' => [ student_enrollment_id => [ subject rows ] ]
-     * ]
-     *
-     * Each subject row: subject, rounds (per-round raw score), average_score,
-     * letter_grade, competency_level, remarks, rank, out_of.
-     * Rank is computed fresh each call - not persisted (same approach as the
-     * single-round builder).
-     */
     public function build(Stream $stream, AcademicTerm $academicTerm): array
     {
         $enrollmentIds = StudentEnrollment::query()
@@ -83,44 +71,47 @@ class TermSubjectReportBuilder
         $gradingBands = GradingBand::orderBy('min_score')->get();
 
         $students = $results->groupBy('student_enrollment_id')->map(function ($group) use ($ranks, $roundScores, $roundNames, $classAverages, $teacherAssignments, $gradingBands) {
-            return $group->map(function ($result) use ($ranks, $roundScores, $roundNames, $classAverages, $teacherAssignments, $gradingBands) {
-                $rankInfo = $ranks[$result->learning_area_id][$result->student_enrollment_id] ?? null;
+            return $group
+                // Subjects listed alphabetically by name (case-insensitive, natural order).
+                ->sortBy(fn ($result) => $result->learningArea->name ?? '', SORT_NATURAL | SORT_FLAG_CASE)
+                ->map(function ($result) use ($ranks, $roundScores, $roundNames, $classAverages, $teacherAssignments, $gradingBands) {
+                    $rankInfo = $ranks[$result->learning_area_id][$result->student_enrollment_id] ?? null;
 
-                $rounds = [];
-                foreach ($roundNames as $roundName) {
-                    $roundScore = $roundScores[$result->learning_area_id][$roundName][$result->student_enrollment_id] ?? null;
-                    $rounds[$roundName] = $roundScore !== null ? round($roundScore) : null;
-                }
+                    $rounds = [];
+                    foreach ($roundNames as $roundName) {
+                        $roundScore = $roundScores[$result->learning_area_id][$roundName][$result->student_enrollment_id] ?? null;
+                        $rounds[$roundName] = $roundScore !== null ? round($roundScore) : null;
+                    }
 
-                $teacher = ($teacherAssignments[$result->learning_area_id] ?? null)?->teacher;
+                    $teacher = ($teacherAssignments[$result->learning_area_id] ?? null)?->teacher;
 
-                $teacherName = $teacher
-                    ? (
-                        (ucwords($teacher->gender) === 'Male' ? 'Mr.' : 'Ms.') . ' ' .
-                        strtoupper(substr($teacher->first_name, 0, 1)) . '. ' .
-                        $teacher->last_name
-                    )
-                    : null;
+                    $teacherName = $teacher
+                        ? (
+                            (ucwords($teacher->gender) === 'Male' ? 'Mr.' : 'Ms.') . ' ' .
+                            strtoupper(substr($teacher->first_name, 0, 1)) . '. ' .
+                            $teacher->last_name
+                        )
+                        : null;
 
-                $score = (int) round($result->average_score);
+                    $score = (int) round($result->average_score);
 
-                $gradingBand = $gradingBands->first(function ($band) use ($score) {
-                    return $score >= $band->min_score && $score <= $band->max_score;
-                });
+                    $gradingBand = $gradingBands->first(function ($band) use ($score) {
+                        return $score >= $band->min_score && $score <= $band->max_score;
+                    });
 
-                return [
-                    'subject'          => $result->learningArea->name,
-                    'rounds'           => $rounds,
-                    'average_score'    => $score,
-                    'class_average'    => $classAverages[$result->learning_area_id] ?? null,
-                    'letter_grade'     => $gradingBand?->letter_grade,
-                    'competency_level' => $result->competency_level,
-                    'remarks'          => $result->teacher_remarks,
-                    'teacher'          => $teacherName,
-                    'rank'             => $rankInfo['rank'] ?? null,
-                    'out_of'           => $rankInfo['out_of'] ?? null,
-                ];
-            })->values()->all();
+                    return [
+                        'subject'          => $result->learningArea->name,
+                        'rounds'           => $rounds,
+                        'average_score'    => $score,
+                        'class_average'    => $classAverages[$result->learning_area_id] ?? null,
+                        'letter_grade'     => $gradingBand?->letter_grade,
+                        'competency_level' => $result->competency_level,
+                        'remarks'          => $result->teacher_remarks,
+                        'teacher'          => $teacherName,
+                        'rank'             => $rankInfo['rank'] ?? null,
+                        'out_of'           => $rankInfo['out_of'] ?? null,
+                    ];
+                })->values()->all();
         })->all();
 
         return ['rounds' => $roundNames, 'students' => $students];

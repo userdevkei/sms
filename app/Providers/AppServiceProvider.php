@@ -21,9 +21,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        View::composer(['layouts.app', 'partials.navbar', 'partials.sidebar', 'partials.footer', 'admissions.public.layout'], function ($view) {
+        View::composer(['layouts.app', 'partials.navbar', 'partials.sidebar', 'partials.footer', 'admissions.public.layout', 'guardian.layout'], function ($view) {
             $view->with('appSettings', setting());
         });
+
+        View::composer('guardian.layout', \App\View\Composers\GuardianLayoutComposer::class);
 
         View::composer('partials.sidebar', function ($view) {
             $view->with('menuItems', config('menu'));
@@ -32,5 +34,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function ($user, string $ability) {
             return $user->hasPermission($ability) ?: null; // null lets Laravel fall through normally
         });
+
     }
 }

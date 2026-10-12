@@ -53,10 +53,19 @@ class Gateway extends Model
 
     public static function activeForType(string $type): ?self
     {
-        return static::query()
-            ->where('provider', $type)          // 'email' | 'sms' | 'whatsapp'
-            ->where('is_active', true)
-            ->with('credentials')
-            ->first();
+        if ($type === 'smtp') {
+            return static::query()
+                ->where('provider', $type)
+                ->where('is_active', true)
+                ->with('credentials')
+                ->first();
+        }else{
+            return static::query()
+                ->where('type', $type)
+                ->where('is_active', true)
+                ->with('credentials')
+                ->first();
+        }
+
     }
 }

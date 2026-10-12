@@ -15,8 +15,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -25,19 +27,6 @@ use Mpdf\Mpdf;
 
 class UserController extends Controller
 {
-    public function index()
-    {
-        $roles = Role::query()->where('slug', '!=', 'student')->orderBy('name')->get(['id', 'name']);
-        return view('users.index', compact('roles'));
-    }
-
-    /**
-     * Server-side DataTables endpoint.
-     * Deliberately raw query builder (not Eloquent hydration) and a
-     * restricted column list — this is the listing that has to stay fast
-     * as the user count grows, so it avoids the overhead of full models,
-     * relationship loading, and unnecessary casts on every row.
-     */
     public function data(Request $request): JsonResponse
     {
         $draw = (int) $request->input('draw', 1);
@@ -57,19 +46,16 @@ class UserController extends Controller
         $orderColumn = $columnMap[$orderColumnIndex] ?? 'created_at';
         $orderDir = $request->input('order.0.dir') === 'asc' ? 'asc' : 'desc';
 
-        /*$baseQuery = DB::table('users')
-            ->selectRaw("id, userID, first_name, middle_name, last_name, email, phone_number, status, avatar, gender, created_at, {$fullNameExpr} as full_name")
-            ->whereNull('deleted_at');*/
-        $baseQuery = DB::table('users')
-            ->selectRaw("id, userID, first_name, middle_name, last_name, email, phone_number, status, avatar, gender, created_at, {$fullNameExpr} as full_name")
-            ->whereNull('deleted_at')
-            ->whereNotExists(function ($sub) {
-                $sub->select(DB::raw(1))
-                    ->from('role_users')
-                    ->join('roles', 'roles.id', '=', 'role_users.role_id')
-                    ->whereColumn('role_users.user_id', 'users.id')
-                    ->where('roles.slug', 'student');
-            });
+        $scope = $this->scopeName($request);
+
+        Log::info($scope);
+
+        $baseQuery = $this->applyScope(
+            DB::table('users')
+                ->selectRaw("id, userID, first_name, middle_name, last_name, email, phone_number, status, avatar, gender, created_at, {$fullNameExpr} as full_name")
+                ->whereNull('deleted_at'),
+            $scope
+        );
 
         $totalRecords = (clone $baseQuery)->count();
 
@@ -123,41 +109,71 @@ class UserController extends Controller
         ]);
     }
 
-    public function create()
+    public function index(Request $request)
     {
-        $roles = Role::query()->orderBy('name')->get(['id', 'name']);
+        $roles = Role::query()->whereNotIn('slug', ['student', Role::GUARDIAN_SLUG])->orderBy('name')->get(['id', 'name']);
+        $scope = $this->scopeName($request);
+
+        return view('users.index', compact('roles', 'scope'));
+    }
+
+    public function create(Request $request)
+    {
+        $scope = $this->scopeName($request);
+
+//        dd($scope);
+        [$roles, $userRoleIds] = $this->formRoles($scope);
         $counties = config('counties');
-        return view('users.create', compact('roles', 'counties'));
+
+        return view('users.create', compact('roles', 'userRoleIds', 'counties', 'scope'));
     }
 
     public function store(StoreUserRequest $request)
     {
         $validated = $request->validated();
+        $scope = $this->scopeName($request);
 
         if ($request->hasFile('avatar')) {
             $validated['avatar'] = FileUploadService::store($request->file('avatar'), 'Files/images');
         }
 
         $validated['password'] = Hash::make($validated['password']);
-        $roleIds = $validated['roles'] ?? [];
+        $roleIds = $this->scopedRoleIds($scope, $validated['roles'] ?? []);
         unset($validated['roles']);
 
         $user = User::query()->create($validated);
         $user->roles()->sync($roleIds);
 
+        if ($scope === 'guardian') {
+            return redirect()->route('users.profile', $user->id)
+                ->with('success', "{$user->full_name} was added. Now link their student(s) below.");
+        }
+
         return redirect()->route('users.index')->with('success', "{$user->full_name} was added successfully.");
     }
 
-    public function edit(User $user)
+    public function edit(Request $request, User $user)
     {
-        $roles = Role::query()->orderBy('name')->get(['id', 'name']);
+        $scope = $this->scopeName($request);
+
+        if (! $this->userInScope($request, $user)) {
+            return $scope === 'guardian'
+                ? abort(404)
+                : redirect()->route('guardians.edit', $user->id);
+        }
+
+        [$roles] = $this->formRoles($scope);
         $userRoleIds = $user->roles()->pluck('roles.id')->all();
         $counties = config('counties');
-        return view('users.edit', compact('user', 'roles', 'userRoleIds', 'counties'));
+
+        return view('users.edit', compact('user', 'roles', 'userRoleIds', 'counties', 'scope'));
     }
 
     public function update(UpdateUserRequest $request, User $user)
     {
+        abort_unless($this->userInScope($request, $user), 404);
+        $scope = $this->scopeName($request);
+
         $validated = $request->validated();
 
         if ($request->hasFile('avatar')) {
@@ -171,13 +187,14 @@ class UserController extends Controller
             unset($validated['password']);
         }
 
-        $roleIds = $validated['roles'] ?? [];
+        $roleIds = $this->scopedRoleIds($scope, $validated['roles'] ?? []);
         unset($validated['roles']);
 
         $user->update($validated);
         $user->roles()->sync($roleIds);
 
-        return redirect()->route('users.index')->with('success', "{$user->full_name} was updated successfully.");
+        return redirect()->route($scope === 'guardian' ? 'guardians.index' : 'users.index')
+            ->with('success', "{$user->full_name} was updated successfully.");
     }
 
     public function destroy(User $user)
@@ -577,5 +594,67 @@ class UserController extends Controller
     public function template()
     {
         return response()->download(base_path('Files/template/StudentTemplate.xlsx'));
+    }
+
+    private function scopeName(Request $request): string
+    {
+        return $request->routeIs('guardians.*') ? 'guardian' : 'staff';
+    }
+
+    /** staff = no students, no guardians. guardian = guardians only. */
+    private function applyScope($query, string $scope)
+    {
+        $roleExists = fn (array $slugs) => function ($sub) use ($slugs) {
+            $sub->select(DB::raw(1))
+                ->from('role_users')
+                ->join('roles', 'roles.id', '=', 'role_users.role_id')
+                ->whereColumn('role_users.user_id', 'users.id')
+                ->whereIn('roles.slug', $slugs);
+        };
+
+        return $scope === 'guardian'
+            ? $query->whereExists($roleExists([Role::GUARDIAN_SLUG]))
+            : $query->whereNotExists($roleExists(['student', Role::GUARDIAN_SLUG]));
+    }
+
+    /** [roles for the form, preselected role ids] */
+    private function formRoles(string $scope): array
+    {
+        if ($scope === 'guardian') {
+            $roles = Role::where('slug', Role::GUARDIAN_SLUG)->get(['id', 'name']);
+            return [$roles, $roles->pluck('id')->all()];
+        }
+
+        return [Role::where('slug', '!=', Role::GUARDIAN_SLUG)->orderBy('name')->get(['id', 'name']), []];
+    }
+
+    /** Server-side enforcement: guardian forms always save the guardian role; staff forms can never assign it. */
+    private function scopedRoleIds(string $scope, array $roleIds): array
+    {
+        $gid = Role::where('slug', Role::GUARDIAN_SLUG)->value('id');
+
+        if ($scope === 'guardian') {
+            return $gid ? [$gid] : [];
+        }
+
+        if ($gid && in_array((string) $gid, array_map('strval', $roleIds), true)) {
+            throw ValidationException::withMessages([
+                'roles' => 'Guardians are managed from the Guardians page.',
+            ]);
+        }
+
+        return array_values($roleIds);
+    }
+
+    private function userInScope(Request $request, User $user): bool
+    {
+        $isGuardian = $user->roles()->where('slug', Role::GUARDIAN_SLUG)->exists();
+
+        return $isGuardian === ($this->scopeName($request) === 'guardian');
+    }
+
+    private function exportPrefix(Request $request): string
+    {
+        return $this->scopeName($request) === 'guardian' ? 'guardians-' : 'staff-';
     }
 }

@@ -1,6 +1,5 @@
 <?php
 
-// app/Http/Controllers/CommunicationController.php
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCommunicationRequest;
@@ -45,7 +44,7 @@ class CommunicationController extends Controller
 
     public function store(StoreCommunicationRequest $request, CommunicationService $service)
     {
-        $validated = $request->validated();
+       $validated = $request->validated();
 
         [$audienceType, $audienceParams] = match ($validated['audience_type']) {
             'manual' => ['manual', [

@@ -1,14 +1,15 @@
 {{-- resources/views/users/edit.blade.php --}}
 @extends('layouts.app')
-@section('title', 'Edit User')
+@php $isGuardians = ($scope ?? 'staff') === 'guardian'; @endphp
+@section('title', $isGuardians ? 'Edit Guardian' : 'Edit User')
 
 @section('content')
     <div class="mb-3">
-        <h1 class="h4 mb-1">Edit User</h1>
+        <h1 class="h4 mb-1">{{ $isGuardians ? 'Edit Guardian' : 'Edit User' }}</h1>
         <p class="text-muted mb-0">Update {{ $user->full_name }}'s details.</p>
     </div>
 
-    <form method="POST" action="{{ route('users.update', $user->id) }}" enctype="multipart/form-data" id="userForm">
+    <form method="POST" action="{{ route($isGuardians ? 'guardians.update' : 'users.update', $user->id) }}" enctype="multipart/form-data" id="userForm">
         @csrf
         @method('PUT')
         @include('users._form')

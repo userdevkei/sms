@@ -24,10 +24,6 @@
             </div>
         </div>
 
-        @if(session('success'))
-            <div class="kv-alert mb-3">{{ session('success') }}</div>
-        @endif
-
         <div class="profile-layout">
 
             {{-- STICKY SIDEBAR: identity + fields a reader needs visible while scrolling the tabs below --}}

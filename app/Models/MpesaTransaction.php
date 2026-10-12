@@ -18,8 +18,7 @@ class MpesaTransaction extends Model
     use HasStringId, LogsActivity;
 
     protected $fillable = [
-        'id', 'user_id', 'invoice_id', 'checkout_request_id', 'merchant_request_id',
-        'phone_number', 'amount', 'status', 'result_code', 'result_description', 'payment_id',
+        'id', 'user_id', 'invoice_id', 'checkout_request_id', 'merchant_request_id', 'phone_number', 'amount', 'status', 'result_code', 'result_description', 'payment_id', 'paid_by_guardian_id'
     ];
 
     protected function casts(): array

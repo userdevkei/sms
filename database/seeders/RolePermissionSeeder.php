@@ -52,6 +52,7 @@ class RolePermissionSeeder extends Seeder
                 'time_slots.create',
                 'time_slots.edit',
                 'time_slots.delete',
+                'my-payroll.view'
             ],
 
             'registrar' => [
@@ -71,6 +72,7 @@ class RolePermissionSeeder extends Seeder
                 'timetable.create',
                 'timetable.edit',
                 'timetable.manage',
+                'my-payroll.view'
             ],
 
             'finance_officer' => [
@@ -118,6 +120,7 @@ class RolePermissionSeeder extends Seeder
                 'other_charges.create',
                 'bank_reconciliation.view',
                 'bank_reconciliation.manage',
+                'my-payroll.view'
             ],
 
             'teacher' => [
@@ -128,6 +131,7 @@ class RolePermissionSeeder extends Seeder
                 'my-timetable.view',
                 'timetable.view',
                 'students.profile',
+                'my-payroll.view'
             ],
 
             'class_teacher' => [
@@ -140,17 +144,14 @@ class RolePermissionSeeder extends Seeder
                 'my-timetable.view',
                 'timetable.view',
                 'my-timetable.class',
-                'results.report_cards.view'
+                'results.report_cards.view',
+                'my-payroll.view'
             ],
 
             'parent' => [
-                'admissions.create',
-                'admissions.view',
-                'invoices.view',
-                'payments.record',
-                'results.view',
-                'students.view',
-                'my-timetable.view',
+                'guardian.view',
+                'guardian.pay',
+                'guardian.update_student'
             ],
 
             'student' => [
@@ -164,22 +165,26 @@ class RolePermissionSeeder extends Seeder
             'transport_coordinator' => [
                 'transport.view',
                 'transport.manage',
+                'my-payroll.view'
             ],
 
             'hostel_warden' => [
                 'accommodation.view',
                 'accommodation.manage',
+                'my-payroll.view'
             ],
 
             'hr_officer' => [
                 'hr.view',
                 'hr.manage',
+                'my-payroll.view'
             ],
 
             'accountant' => [
                 'accounting.view',
                 'accounting.manage',
                 'reports.finance',
+                'my-payroll.view'
             ],
         ];
 

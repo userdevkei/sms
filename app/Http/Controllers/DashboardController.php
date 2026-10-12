@@ -24,6 +24,10 @@ class DashboardController extends Controller
         $user      = auth()->user();
         $roleSlugs = $user->roles()->pluck('slug')->toArray(); // ASSUMPTION: User::roles() belongsToMany(Role::class, 'role_users')
 
+        if ($roleSlugs === ['guardian']) {
+            return redirect()->route('guardian.dashboard');
+        }
+
         $currentTerm = $this->resolveCurrentTerm();
 
         $viewData = [
